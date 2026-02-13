@@ -95,14 +95,8 @@ If you're unsure where to start, open an issue to discuss ideas.
 
 ## License
 
-Specify a license (e.g., MIT) in the repository when ready.
+MIT
 
 ---
 
-If you want, I can also:
 
-- add a minimal CONTRIBUTING.md
-- scaffold basic routes and a sample PWA manifest
-- set up GitHub Actions for linting/build
-
-Tell me which of the above you'd like next.
