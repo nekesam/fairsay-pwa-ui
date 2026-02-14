@@ -2,13 +2,13 @@
 //Waiting for api integration
 
 export const validateFileUpload = (file) => {
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/doc', 'application/docx'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (!allowedTypes.includes(file.type)) {
       return { valid: false, error: 'Unsupported file type. Please upload a PDF or image (JPEG/PNG).' };
     }
     if (file.size > maxSize) {
-      return { valid: false, error: 'File size exceeds 5MB limit. Please upload a smaller file.' };
+      return { valid: false, error: 'File size exceeds 10MB limit. Please upload a smaller file.' };
     }
     return { valid: true };
     };
