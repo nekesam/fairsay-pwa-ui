@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Development files
+PRODUCT REQUIREMENT DOCUMENT FOR FAIRSAY.md
+IMPLEMENTATION_SUMMARY.md
+fairsay-starter
