@@ -28,8 +28,14 @@ export const validateEscalation = (dateString, hasProof) => {
 };
 
 export const getStatusProgress = (status) => {
-  const mapping = { 'Submitted': 20, 'Under Review': 40, 'Escalated to PCC': 60, 'In Progress': 80, 'Resolved': 100 };
-  return mapping[status] || 0;
+  const config = {
+    'Submitted': { color: '#64748B', percent: 20 },      // Slate
+    'Under Review': { color: '#1e3a8a', percent: 40 },   //Blue
+    'Escalated to PCC': { color: '#7a20e9', percent: 60 }, // Indigo
+    'Investigation': { color: '#ea1f33', percent: 80 }, //Red
+    'Resolved': { color: '#0f6b52', percent: 100 }  //Green
+  };
+  return config[status] || { color: '#CBD5E1', percent: 0 };
 };
 
 

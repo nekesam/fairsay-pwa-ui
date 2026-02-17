@@ -1,0 +1,36 @@
+{
+  "short_name": "FairSay",
+  "name": "FairSay: Workplace Rights & Reporting",
+  "description": "Incoming",
+  "icons": [
+    {
+      "src": "fs_logo.svg",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "fs_logo.svg",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "fs_logo.svg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#003366",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "screenshots": [
+    {
+      "src": "screenshot-main.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "FairSay Dashboard"
+    }
+  ]
+}
