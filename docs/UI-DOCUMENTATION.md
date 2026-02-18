@@ -75,25 +75,59 @@ This document provides comprehensive information about the FairSay PWA user inte
 **Card Width:** 504px
 
 **Features:**
-- Email input for password reset
-- Success state with confirmation message
-- "Try again" functionality to reset form
-- Clean, user-friendly two-state flow
+- Email input for password reset request
+- Form validation
+- Clear instructions for password reset process
+- Help text for users without email access
+- Sign up option for new users
 
-**States:**
-1. **Initial State:** Email input form
-2. **Success State:** Confirmation message with mailbox icon (72px)
+**Fields:**
+- Email (required, validated, with envelope icon)
 
 **Actions:**
-- Reset Password button (sends reset link)
-- Try Again button (returns to form)
+- Reset Password button (navigates to `/check-email`)
 - Back to sign in link → `/sign-in`
+- Create an account link → `/sign-up`
+
+**Additional Elements:**
+- "OR" divider with gray line
+- Help box with info about email access issues
+- Support email link
+
+---
+
+#### 4. Check Email (`/check-email`)
+**File:** `src/pages/CheckEmail.jsx`  
+**Card Width:** 504px
+
+**Features:**
+- Success confirmation after password reset request
+- Email delivery instructions
+- Expiration notice (1-hour validity)
+- Resend functionality
+- Help text for spam folder reminder
+
+**Visual Elements:**
+- Success icon (72px envelope with checkmark)
+- Heading: "Check your email"
+- User's email address displayed
+- Information box with clock icon (1-hour expiration notice)
+
+**Actions:**
+- Back to Sign In button → `/sign-in`
+- Resend email link (shows confirmation after click)
+- Support email link
+
+**Info Box:**
+- Light blue background with info icon
+- Expiration warning (1 hour)
+- Spam folder reminder
 
 ---
 
 ### Onboarding Pages (Multi-Step Flow)
 
-#### 4. Complete Profile (`/complete-profile`)
+#### 5. Complete Profile (`/complete-profile`)
 **File:** `src/pages/CompleteProfile.jsx`  
 **Card Width:** 1020px  
 **Step:** 2 of 3
@@ -120,7 +154,7 @@ This document provides comprehensive information about the FairSay PWA user inte
 
 ---
 
-#### 5. Employee Verification (`/employee-verification`)
+#### 6. Employee Verification (`/employee-verification`)
 **File:** `src/pages/EmployeeVerification.jsx`  
 **Card Width:** 1020px  
 **Step:** 3 of 3
@@ -159,7 +193,7 @@ This document provides comprehensive information about the FairSay PWA user inte
 
 ---
 
-#### 6. Account Success (`/account-success`)
+#### 7. Account Success (`/account-success`)
 **File:** `src/pages/AccountSuccess.jsx`  
 **Card Width:** 1020px
 
@@ -193,6 +227,108 @@ This document provides comprehensive information about the FairSay PWA user inte
 
 ---
 
+### Main Application Pages
+
+#### 8. Dashboard / Home (`/dashboard`, `/home`)
+**File:** `src/pages/Dashboard.jsx`  
+**Layout:** Full-width responsive layout
+
+**Features:**
+- Main landing page after successful onboarding
+- User profile header with avatar and role display
+- Notification system with badge indicators
+- Verification status banner
+- Personalized welcome message
+- Statistics overview cards
+- Quick action shortcuts
+- Activity feed
+- Education progress tracker
+- Quick links navigation
+
+**Header Section:**
+- FairSay logo (clickable)
+- Notification bell with red badge count
+- User profile avatar ("JD") with initials
+- Logout button
+
+**Verification Banner:**
+- Yellow background alert
+- Status: "Verification in Progress"
+- Link to Account Success page for status check
+
+**Stats Cards (Responsive 2x2 grid on desktop, stack on mobile):**
+1. **Education Progress** (Teal accent)
+   - Percentage: 60% complete
+   - Progress indicator: +20%
+   - Detail: 3 of 5 modules completed
+   
+2. **Active Complaints** (Blue accent)  
+   - Count: 2 active cases
+   - Badge: "Update" notification
+   - Detail: 1 under review
+   
+3. **Resolved Cases** (Green accent)  
+   - Count: 1 resolved this month
+   - Trend: Positive indicator
+   
+4. **AI Consultations** (Purple accent)  
+   - Count: 8 total sessions
+   - Icon: Sparkles/AI indicator
+
+**Quick Actions (3-card grid with gradients):**
+1. **Continue Learning** (Teal gradient)
+   - Icon: Book
+   - Action: Navigate to `/learning`
+   
+2. **File New Complaint** (Blue gradient)
+   - Icon: Document with lock badge
+   - Status: LOCKED (requires verification)
+   - Disabled state
+   
+3. **Ask AI Assistant** (Blue gradient)
+   - Icon: Sparkles
+   - Action: Navigate to `/learning`
+
+**Recent Activity Feed (4 activities with color-coded backgrounds):**
+- Complaint #1234 Updated (Gray, 2 hours ago)
+- Module "Understanding Your Rights" Completed (Green, Yesterday)
+- AI Consultation Saved (Gray, 2 days ago)  
+- Verification Document Required - Action Needed (Yellow, 3 days ago)
+
+**Sidebar (Desktop right column, below main content on mobile):**
+
+*Education Progress Widget:*
+- 5 modules listed with progress bars
+  1. Welcome to FairSay - 100% complete (green)
+  2. Your Rights as an Employee - 100% complete (green)
+  3. How to Report Issues - 80% complete (teal)
+  4. Understanding the Process - 0% (gray, locked)
+  5. Using AI Assistant - 0% (gray, locked)
+
+*Quick Links:*
+- My Profile
+- Settings  
+- Help & Support
+- Privacy Policy
+- Terms of Service
+- Contact Us
+
+**Responsive Layout:**
+- **Desktop (≥1024px):** 3-column grid (main content spans 2 columns, sidebar 1 column)
+- **Tablet (768px-1023px):** 2-column layouts with sidebar below
+- **Mobile (<768px):** Single column, all sections stacked
+
+**Actions & Navigation:**
+- Logo click → Dashboard home
+- Notifications → Shows notification panel
+- Profile → User menu/settings
+- Logout → Sign out
+- Continue Learning → `/learning`
+- AI Assistant → `/learning`  
+- All quick links → Respective pages
+
+---
+
 ## Navigation Flow
 
 ```
@@ -202,15 +338,15 @@ This document provides comprehensive information about the FairSay PWA user inte
 └──────┬──────┘
        │ Redirects to
        ▼
-┌─────────────┐        ┌──────────────┐
-│  /sign-in   │◄───────│/forgot-      │
-│  Sign In    │        │ password     │
-└──────┬──────┘        └──────────────┘
-       │
-       │ New user
-       ▼
-┌─────────────┐
-│  /sign-up   │
+┌─────────────┐        ┌──────────────┐        ┌──────────────┐
+│  /sign-in   │───────►│/forgot-      │───────►│ /check-email │
+│  Sign In    │        │ password     │        │ Check Email  │
+└──────┬──────┘        └──────────────┘        └──────┬───────┘
+       │                                              │
+       │ New user                              Back to Sign In
+       ▼                                              │
+┌─────────────┐                                       │
+│  /sign-up   │◄──────────────────────────────────────┘
 │  Sign Up    │
 └──────┬──────┘
        │ Submit
@@ -235,7 +371,7 @@ This document provides comprehensive information about the FairSay PWA user inte
        ├─────────────────┐
        ▼                 ▼
   /dashboard        /learning
- (placeholder)     (placeholder)
+  /home (alias)    (placeholder)
 ```
 
 ---

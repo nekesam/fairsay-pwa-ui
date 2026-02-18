@@ -245,7 +245,7 @@ export default function SignIn() {
 
         {/* Back to Home */}
         <Link
-          to="/"
+          to="/dashboard"
           className="text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors inline-flex items-center gap-1"
         >
           <svg
