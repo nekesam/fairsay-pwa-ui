@@ -28,12 +28,21 @@ The frontend features a complete authentication and onboarding flow with respons
 **Authentication Flow:**
 - Sign In page with password visibility toggle
 - Sign Up page with validation and responsive layout
-- Forgot Password flow with success state
+- Forgot Password flow with separate Check Email confirmation page
 
 **Multi-Step Onboarding (Step Indicator):**
 - Complete Profile (Step 2/3) - Workplace information
 - Employee Verification (Step 3/3) - File upload & consents
 - Account Success page with status cards and next steps
+
+**Dashboard & Home:**
+- Full-featured dashboard as main landing page
+- User profile header with notifications
+- Stats cards (Education Progress, Active Complaints, Resolved Cases, AI Consultations)
+- Quick Actions (Continue Learning, File Complaint, AI Assistant)
+- Recent Activity feed
+- Education Progress sidebar with module tracking
+- Quick Links navigation
 
 **Design System:**
 - Consistent color palette (FairSay Blue & Teal)
@@ -52,9 +61,11 @@ The frontend features a complete authentication and onboarding flow with respons
 ### 📋 Navigation Flow
 
 ```
-/ → /sign-in → /sign-up → /complete-profile → /employee-verification → /account-success
-              ↓
-        /forgot-password
+/ → /sign-in ⇄ /sign-up → /complete-profile → /employee-verification → /account-success → /dashboard
+        ↓
+  /forgot-password → /check-email
+  
+/dashboard (or /home) → Main home page after onboarding
 ```
 
 For detailed information about each page, see [UI Documentation](docs/UI-DOCUMENTATION.md).
