@@ -11,6 +11,9 @@ import CompleteProfile from './pages/CompleteProfile';
 import EmployeeVerification from './pages/EmployeeVerification';
 import AccountSuccess from './pages/AccountSuccess';
 import Dashboard from './pages/Dashboard';
+import ComplaintForm from './pages/ComplaintForm';
+import ComplaintSuccess from './pages/ComplaintSuccess';
+import MyComplaints from './pages/MyComplaints';
 
 function App() {
   return (
@@ -40,6 +43,11 @@ function App() {
           //</ProtectedRoutes>
           } />
         <Route path="/home" element={<Dashboard />} />
+        
+        {/* Complaint Routes */}
+        <Route path="/file-complaint" element={<ComplaintForm />} />
+        <Route path="/complaint-success" element={<ComplaintSuccess />} />
+        <Route path="/my-complaints" element={<MyComplaints />} />
         
         {/* Placeholders */}
         <Route path="/learning" element={
