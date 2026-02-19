@@ -172,7 +172,10 @@ export default function Dashboard() {
               </div>
 
               {/* Active Complaints */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB]">
+              <Link 
+                to="/my-complaints"
+                className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB] hover:shadow-md transition-shadow"
+              >
                 <div className="w-12 h-12 rounded-lg bg-[#1E3A8A] flex items-center justify-center mb-3">
                   <svg
                     width="24"
@@ -198,7 +201,7 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <div className="text-xs text-[#9CA3AF] mt-1">1 under review</div>
-              </div>
+              </Link>
 
               {/* Resolved Cases */}
               <div className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB]">
@@ -296,10 +299,10 @@ export default function Dashboard() {
                 </Link>
 
                 {/* File New Complaint */}
-                <div className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] rounded-xl p-6 text-white hover:shadow-lg transition-shadow relative">
-                  <span className="absolute top-4 right-4 text-xs bg-[#F0B100] text-black px-2 py-1 rounded-full font-semibold">
-                    Locked
-                  </span>
+                <Link
+                  to="/file-complaint"
+                  className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] rounded-xl p-6 text-white hover:shadow-lg transition-shadow"
+                >
                   <svg
                     width="32"
                     height="32"
@@ -320,7 +323,7 @@ export default function Dashboard() {
                   <p className="text-sm text-white/90 mb-4">
                     Report a workplace rights violation
                   </p>
-                  <div className="flex items-center gap-2 text-sm font-medium opacity-50">
+                  <div className="flex items-center gap-2 text-sm font-medium">
                     Start Complaint
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
@@ -332,7 +335,7 @@ export default function Dashboard() {
                       />
                     </svg>
                   </div>
-                </div>
+                </Link>
 
                 {/* Ask AI Assistant */}
                 <Link
