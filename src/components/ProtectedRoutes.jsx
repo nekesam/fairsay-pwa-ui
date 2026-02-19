@@ -19,7 +19,7 @@ const ProtectedRoutes = ({ children, step }) => {
 
     if (!user) return <Navigate to="/sign-in" state={{ from: location }} replace />;
 
-    if (step === 'emailVerified' && !user.emailVerified) return <Navigate to="/verify-email" replace />;
+    if (step === 'emailVerified' && !user.emailVerified) return <Navigate to="/check-email" replace />;
     if (step === 'verified' && !user.isVerified)  return <Navigate to="/employee-verification" replace />;
     if (step === 'educated' && !user.hasCompletedEducation) return <Navigate to="/learning" replace />;
 

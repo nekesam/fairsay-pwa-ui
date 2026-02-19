@@ -1,4 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
+import { Alert } from './components/Alert';
+import LandingPage from './pages/landingpage'; 
+import ProtectedRoutes from './components/ProtectedRoutes';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import ForgotPassword from './pages/ForgotPassword';
@@ -10,10 +14,13 @@ import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Redirect root to sign in */}
-        <Route path="/" element={<Navigate to="/sign-in" replace />} />
+    <AppProvider>
+      <Alert />
+      <BrowserRouter>
+        <Routes>
+
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
         
         {/* Authentication Routes */}
         <Route path="/sign-in" element={<SignIn />} />
@@ -27,16 +34,25 @@ function App() {
         <Route path="/account-success" element={<AccountSuccess />} />
         
         {/* Dashboard / Home */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={
+          //<ProtectedRoutes step="emailVerified">
+          <Dashboard /> 
+          //</ProtectedRoutes>
+          } />
         <Route path="/home" element={<Dashboard />} />
         
         {/* Placeholders */}
-        <Route path="/learning" element={<div className="p-8 text-center">Learning Center (Coming Soon)</div>} />
+        <Route path="/learning" element={
+          <ProtectedRoutes step="emailVerified">
+            <div className="p-8 text-center">Learning Center (Coming Soon)</div>
+          </ProtectedRoutes>
+        } />
         
-        {/* Catch all - redirect to sign in */}
-        <Route path="*" element={<Navigate to="/sign-in" replace />} />
+        {/* Catch all - redirect to landing page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </AppProvider>
   );
 }
 

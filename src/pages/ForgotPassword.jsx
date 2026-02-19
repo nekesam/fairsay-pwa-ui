@@ -1,6 +1,7 @@
 import Logo from "../components/Logo";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { APP_NAME } from "../utils/constants";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -20,8 +21,10 @@ export default function ForgotPassword() {
     >
       <div className="w-full max-w-[504px] flex flex-col items-center gap-7">
         {/* Logo */}
-        <Logo />
-
+         <div className="flex items-center gap-2">
+                    <div className="w-10 h-10"><Logo /></div>
+                    <span className="text-[36px] font-bold font-poppins text-[#1e3a8a]">{APP_NAME}</span>
+                  </div>
         {/* Main Card */}
         <div className="w-full rounded-2xl bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-7">
           <div className="mb-7 text-center">

@@ -3,6 +3,14 @@
 //To edit as needed
 //Waiting for api integration
 
+//Added - icons for the landing page features
+import shield from '../images/FS_Logo.svg';
+import book from '../images/Book.svg';
+import report from '../images/Report.svg';
+import lock from '../images/Lock.svg';
+import social from '../images/Social.svg';
+import analytics from '../images/Analytics.svg';
+
 //Added - the web app name
 export const APP_NAME = "FairSay";
 
@@ -32,26 +40,42 @@ export const FINAL_QUIZ_KEY = {
 //Added - complaint status options, simulating the different stages a complaint can go through in the system. This allows for better tracking and management of complaints within the app.
 export const COMPLAINT_STATUS = {
   SUBMITTED: 'Submitted',
-  REVIEW: 'Under review',
-  ESCALATED: 'Escalated to PCC',
-  PROGRESS: 'In progress',
+  REVIEW: 'Under Review',
+  PROGRESS: 'Investigation',
   RESOLVED: 'Resolved',
-  ARCHIVED: 'Resolved-closed'
+  ARCHIVED: 'Closed'
 };
 
 //Added - complaint categories, simulating the different types of complaints that users can select when submitting a complaint. This helps categorize complaints for better organization and allows for more targeted handling of different issues within the app.
 
 export const COMPLAINT_CATEGORIES = [
-  { id: 'WAGE', label: 'Wage & Benefits Violations' },
-  { id: 'HARASSMENT', label: 'Workplace Harassment' },
-  { id: 'SAFETY', label: 'Health & Safety Concerns' },
+  { id: 'WAGE', label: 'Wage & Hour Violations' },
+  { id: 'HARASSMENT', label: 'Harassment' },
+  { id: 'SAFETY', label: 'Safety Violations' },
   { id: 'DISCRIMINATION', label: 'Discrimination' },
-  { id: 'OTHER', label: 'Other/General Grievance' }
+  { id: 'RETALIATION', label: 'Retaliation' },
+  { id: 'WRONGFUL TERMINATION', label: 'Wrongful Termination' }
+];
+
+//Added- search categories for the complaint search feature, simulating the different criteria that users can use to filter and search through their complaints. This allows for a more efficient and user-friendly way to find specific complaints based on various attributes.
+export const SEARCH_CATEGORIES = [
+  { id: 'WAGE', label: 'Wage & Hour' },
+  { id: 'HARASSMENT', label: 'Harassment' },
+  { id: 'SAFETY', label: 'Safety' },
+  { id: 'DISCRIMINATION', label: 'Discrimination' }
+];
+
+//Added - profile privacy options, simulating the different levels of privacy that users can choose for their profiles. This allows users to control who can see their information and complaints within the app, enhancing user privacy and security.
+export const PROFILE_PRIVACY_OPTIONS = [
+  { id: 'CONFIDENTIAL', label: 'Private - Only visible to you' },
+  { id: 'SHARED', label: 'Public - Visible to all users' },
+  { id: 'ORGANIZATION', label: 'Organization - Visible to your organization' }
 ];
 
 //Added - app steps, simulating the different stages of the user journey within the app. This allows for better tracking of user progress and helps guide users through the various features and educational content in a structured way.
 
 export const APP_STEPS = {
+    REGISTRATION: 'isRegistered',
   EMAIL_VERIFICATION: 'emailVerified',
   PROFILE_COMPLETION: 'isVerified',
   EDUCATION: 'educated',
@@ -72,3 +96,50 @@ export const PRIVACY_DISCLAIMERS = {
   CONFIDENTIAL_MODE: "Your identity will be masked. The PCC will see you as 'Confidential Employee'.",
   HONESTY_DECLARATION: "I declare that the information provided is true and follows the Nigerian Labour Act."
 };
+
+//Added - landing page features list, which will make my life easier (wish I had done this sooner). This simulates the key features that will be highlighted on the landing page to attract and inform potential users about the benefits of using the app. This allows for easy updates to the landing page content without having to dig through the component code.
+
+export const LANDING_FEATURES = [
+  {
+    id: 'edu',
+    title: "Rights Education Hub",
+    desc: "Comprehensive educational materials covering workplace rights, reporting procedures, and legal protections. Mandatory completion ensures informed decisions.",
+    icon: book,
+    color: "blue"
+  },
+  {
+    id: 'report',
+    title: "Complaint Submission",
+    desc: "Easy-to-use complaint forms with evidence upload capabilities. Internal escalation verification ensures proper channels are followed.",
+    icon: report,
+    color: "blue"
+  },
+  {
+    id: 'whistle',
+    title: "Secure Whistleblowing",
+    desc: "Anonymous drop-and-go submission option for those who wish to report without revealing their identity. Full encryption and protection guaranteed.",
+    icon: shield,
+    color: "red"
+  },
+  {
+    id: 'track',
+    title: "Real-Time Tracking",
+    desc: "Monitor your complaint status from submission to resolution. Receive updates and notifications throughout the process.",
+    icon: analytics,
+    color: "blue"
+  },
+  {
+    id: 'ai',
+    title: "AI-Powered Guidance",
+    desc: "RAG system provides personalized recommendations, answers FAQs, and suggests tailored next steps based on your situation.",
+    icon: social,
+    color: "blue"
+  },
+  {
+    id: 'privacy',
+    title: "Data Privacy & Security",
+    desc: "Enterprise-grade security with role-based access control. Your data is encrypted and protected at all times.",
+    icon: lock,
+    color: "red"
+  }
+];

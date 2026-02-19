@@ -1,6 +1,7 @@
 //Bridge for the global state of the app, such as user progress and form access
 
 import React, { createContext, useState,  useContext, useEffect } from 'react';
+import { storageService } from '../services/storageServices';
 
 export const AppContext = createContext();
 
@@ -12,9 +13,9 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     //Simulate checking for existing user session on app load
-    const existingUser = localStorage.getItem('fs_users');
+    const existingUser = storageService.getCurrentUser();
     if (existingUser) {
-      setUser(JSON.parse(existingUser));
+      setUser(existingUser);
     }
     setLoading(false);
   }, []);
@@ -23,19 +24,25 @@ export const AppProvider = ({ children }) => {
 //To sync user state with localStorage, ensuring that changes to the user object are persisted across sessions and page reloads. This allows the app to maintain the user's progress and session state effectively.
 const login = (userData) => {
   setUser(userData);
-  localStorage.setItem('fs_users', JSON.stringify(userData));
+ storageService.setCurrentUser(userData);
 };
 
 const logout = () => {
   setUser(null);
-  localStorage.removeItem('fs_users');
+  storageService.logout();
 };
 
 //To update user fields after verification, such as email verification or employee verification. This allows the app to track the user's progress through the different stages of the complaint process and unlock features accordingly.
 const updateUser = (updatedData) => {
   setUser(prev => {
     const updatedUser = { ...prev, ...updatedData };
-    localStorage.setItem('fs_users', JSON.stringify(updatedUser));
+    storageService.setCurrentUser(updatedUser);
+    const allUsers = storageService.getUsers();
+    const userIndex = allUsers.findIndex(u => u.email === updatedUser.email);
+    if (userIndex !== -1) {
+      allUsers[userIndex] = updatedUser;
+      localStorage.setItem('fs_users', JSON.stringify(allUsers));
+    }
     return updatedUser;
   });
 };
@@ -49,7 +56,7 @@ const updateUser = (updatedData) => {
 
  
   return (
-    <AppContext.Provider value={{ user, login, logout, updateUser, loading, alert, showAlert }}>
+    <AppContext.Provider value={{ user, setUser, login, logout, updateUser, loading, alert, showAlert }}>
       {children}
     </AppContext.Provider>
   );
