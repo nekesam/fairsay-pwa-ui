@@ -339,7 +339,7 @@ export default function Dashboard() {
 
                 {/* Ask AI Assistant */}
                 <Link
-                  to="/learning"
+                  to="/ai-assistant"
                   className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] rounded-xl p-6 text-white hover:shadow-lg transition-shadow"
                 >
                   <svg
