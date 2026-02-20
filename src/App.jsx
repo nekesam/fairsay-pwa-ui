@@ -14,6 +14,11 @@ import Dashboard from './pages/Dashboard';
 import ComplaintForm from './pages/ComplaintForm';
 import ComplaintSuccess from './pages/ComplaintSuccess';
 import MyComplaints from './pages/MyComplaints';
+import EducationHub from './pages/EducationHub';
+import Lesson from './pages/Lesson';
+import Quiz from './pages/Quiz';
+import AIAssistant from './pages/AIAssistant';
+import Whistleblowing from './pages/Whistleblowing';
 
 function App() {
   return (
