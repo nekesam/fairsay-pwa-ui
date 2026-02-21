@@ -95,7 +95,7 @@ export default function ComplaintSuccess() {
                 className="text-[22px] sm:text-[27px] font-bold text-[#1E3A8A] tracking-widest"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
-                {complainId}
+                {complaintId}
               </span>
             </div>
             <p className="text-center text-[11px] text-gray-500">
