@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
-import { Alert } from './components/Alert';
-import LandingPage from './pages/landingpage'; 
 import ProtectedRoutes from './components/ProtectedRoutes';
+import { APP_STEPS } from './utils/constants';
+import { Alert } from './components/Alert';
+import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import ForgotPassword from './pages/ForgotPassword';
@@ -23,12 +24,10 @@ import Whistleblowing from './pages/Whistleblowing';
 function App() {
   return (
     <AppProvider>
-      <Alert />
-      <BrowserRouter>
-        <Routes>
-
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
+    <BrowserRouter>
+      <Routes>
+       
+     <Route path="/" element={<LandingPage />} />
         
         {/* Authentication Routes */}
          <Route path="/sign-in" element={<SignIn />} />
@@ -97,31 +96,6 @@ function App() {
               <Whistleblowing />
             </ProtectedRoutes>
           } />
-        
-        {/* Onboarding Routes */}
-        <Route path="/complete-profile" element={<CompleteProfile />} />
-        <Route path="/employee-verification" element={<EmployeeVerification />} />
-        <Route path="/account-success" element={<AccountSuccess />} />
-        
-        {/* Dashboard / Home */}
-        <Route path="/dashboard" element={
-          //<ProtectedRoutes step="emailVerified">
-          <Dashboard /> 
-          //</ProtectedRoutes>
-          } />
-        <Route path="/home" element={<Dashboard />} />
-        
-        {/* Complaint Routes */}
-        <Route path="/file-complaint" element={<ComplaintForm />} />
-        <Route path="/complaint-success" element={<ComplaintSuccess />} />
-        <Route path="/my-complaints" element={<MyComplaints />} />
-        
-        {/* Placeholders */}
-        <Route path="/learning" element={
-          <ProtectedRoutes step="emailVerified">
-            <div className="p-8 text-center">Learning Center (Coming Soon)</div>
-          </ProtectedRoutes>
-        } />
         
         {/* Catch all - redirect to landing page */}
         <Route path="*" element={<Navigate to="/" replace />} />
