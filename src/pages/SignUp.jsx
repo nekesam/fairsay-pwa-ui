@@ -1,9 +1,16 @@
+import api from '../services/api';
 import Logo from "../components/Logo";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { APP_NAME } from "../utils/constants";
+import { useAppContext } from "../context/AppContext";
+import { Alert } from "../components/Alert";
+
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { setUser, showAlert } = useAppContext();
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -15,11 +22,54 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setAlert({ show: false, message: "", type: "error" });
     // Here you would handle account creation
-    navigate("/complete-profile");
+    if (formData.password !== formData.confirmPassword) {
+      showAlert("Passwords do not match", "error" );
+      return;
+    }
+    try {
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password
+      }
+    const res = await api.post('/auth/register', payload);
+    setAlert({ show: true, message: res.data.message, type: "success"});
+
+    setTimeout(() => {
+      navigate("/check-email")
+    }, 3000);
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || "Registration failed. Please try again";
+    setAlert({ show: true, message: errorMsg, type: "error"});
+  }
+};
+
+
+  //Added - a developer bypass for testing purposes
+  const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const handleDeveloperBypass = () => {
+  if (!isDevelopment) return; // Hide button in production
+  const devUser = {
+    id: 'dev-' + Date.now(),
+    firstName: "Dev",
+    lastName: "Mode",
+    email: "dev@fairsay.test",
+    isWhistleblower: false,
+    emailVerified: true,       
+    isVerified: true,           
+    hasCompletedEducation: true, 
+    createdAt: new Date().toISOString(),
   };
+
+  localStorage.setItem('fs_user', JSON.stringify(devUser));
+  setUser(devUser);
+  navigate("/dashboard");
+};
 
   return (
     <div
@@ -30,7 +80,10 @@ export default function SignUp() {
     >
       <div className="w-full max-w-[576px] flex flex-col items-center gap-7">
         {/* Logo */}
-        <Logo />
+       <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 text-[#1E3A8A]"><Logo /></div>
+                  <span className="text-[36px] font-bold font-poppins text-[#1E3A8A]">{APP_NAME}</span>
+                </div>
 
         {/* Main Card */}
         <div className="w-full rounded-2xl bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-7">
@@ -42,6 +95,16 @@ export default function SignUp() {
               Join FairSay to protect your workplace rights
             </p>
           </div>
+
+
+       {/*For rendering the alert*/}
+       {alert.show && (
+         <div className={`mb-6 p-4 rounded-lg text-sm font-medium border ${
+           alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+         }`}>
+           {alert.message}
+         </div>
+       )}
 
           <form onSubmit={handleSubmit} className="space-y-[18px]">
             {/* First Name and Last Name */}
@@ -425,6 +488,19 @@ export default function SignUp() {
           Back to Home
         </Link>
       </div>
+      
+      {/* DEVELOPER BYPASS BUTTON */}
+      {isDevelopment && (
+        <div className="fixed bottom-4 right-4 z-[100]">
+<button
+  type="button"
+  onClick={handleDeveloperBypass}
+  className="fixed bottom-4 right-4 z-[100] bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow-2xl hover:bg-red-700 transition-all border-2 border-white text-xs uppercase tracking-widest"
+>
+  🛠️ DEV BYPASS
+</button>
+</div>
+      )}
     </div>
   );
 }

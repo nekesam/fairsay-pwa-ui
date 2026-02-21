@@ -1,13 +1,97 @@
+import { useEffect, useState } from "react";
 import Logo from "../components/Logo";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { APP_NAME, REQUIRED_MODULES, APP_STEPS } from "../utils/constants";
+import { useAppContext } from "../context/AppContext";
+import api from '../services/api';
+import book from '../images/Book.svg';
+import report from '../images/Report.svg';
+import whitecheckmark from '../images/Whitecheckmark.svg';
+import chatbubble from '../images/Chatbubble.svg';
+import ribbon from '../images/Ribbon.svg';
+import { getInitials, getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/logic-helpers";
 
-export default function Dashboard() {
+
+
+ export default function Dashboard() {
+  const { user, logout } = useAppContext();
+  const navigate = useNavigate();
+  const [activities, setActivities] = useState([]);
+  const [complaintStats, setComplaintStats] = useState({ active: 0, resolved: 0});
+
+  //To sync activities with localStorage
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        const storedLogs = localStorage.getItem('fs_logs');
+        const allLogs = storedLogs ? JSON.parse(storedLogs) : [];
+        
+        if (Array.isArray(allLogs)) {
+          const userLogs = allLogs
+            .filter(log => log && log.userId === user.id)
+            .reverse() 
+            .slice(0, 5);
+          setActivities(userLogs);
+        }
+      } catch (error) {
+        console.error("Failed to parse logs:", error);
+        setActivities([]); 
+      }
+    }
+  }, [user]);
+
+  //To fetch complaints 
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        const res = await api.get('/complaints');
+        if (res.data.success) {
+          const allComplaints = res.data.complaints;
+          const activeCount = allComplaints.filter(c => c.status === 'pending' || c.status === 'in_progress').length;
+          const resolvedCount = allComplaints.filter(c => c.status === 'resolved').length;
+          
+          setComplaintStats({ active: activeCount, resolved: resolvedCount });
+        }
+      } catch (error) {
+        console.error("Failed to fetch complaints:", error);
+      }
+    };
+
+    if (user) {
+      fetchComplaints();
+    }
+  }, [user]);
+
+  
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F766E]"></div>
+      </div>
+    );
+  }
+
+  //To handle user logout, clearing session and redirecting to sign-in page.
+  const handleLogout = () => {
+    logout();
+    navigate('/sign-in');
+  };
+
+
+  const progressPercent = calculateProgress(user, REQUIRED_MODULES.length) || 0;
+  const completedCount = user.completedModules?.length || 0;
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       {/* Header */}
       <header className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="max-w-[95%] mx-auto flex items-center justify-between">
-          <Logo />
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
+           <div className="flex items-center gap-2 justify-center">
+                             <div className="w-8 h-8"><Logo /></div>
+                             <span className="text-[24px] font-bold font-poppins text-[#1e3a8a]">{APP_NAME}</span>
+                           </div>
           <div className="flex items-center gap-4">
             {/* Notification */}
             <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -38,20 +122,20 @@ export default function Dashboard() {
 
             {/* User Profile */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">
-                JD
+              <div className="w-10 h-10 rounded-full bg-gradient-to-b from-[#1E3A8A] to-[#0F766E] text-white flex items-center justify-center font-bold text-[12px] font-inter">
+                {getInitials(user)}
               </div>
               <div className="hidden md:block">
-                <div className="font-semibold text-sm text-[#333]">John Divine</div>
-                <div className="text-xs text-[#9CA3AF]">Software Engineer</div>
+                <div className="font-semibold text-[24px] font-inter text-[#333]">{user.firstName} {user.lastName}</div>
+                <div className="text-[14px] text-[#9CA3AF] cursor-pointer hover:text-[#1E3A8A]">{user.job_title || 'Add Job Title'}</div>
               </div>
             </div>
 
             {/* Logout */}
-            <Link to="/sign-in" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button onClick={handleLogout} className="ml-2 p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors">
               <svg
-                width="20"
-                height="20"
+                width="24"
+                height="24"
                 viewBox="0 0 20 20"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -78,14 +162,15 @@ export default function Dashboard() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </Link>
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[95%] mx-auto px-6 py-8">
+      <main className="max-w-[1440px] mx-auto px-2 py-8">
         {/* Verification Banner */}
+        {!user[APP_STEPS.PROFILE_COMPLETION] && (
         <div className="mb-8 rounded-lg border-l-4 border-[#F0B100] bg-[#FEFCE8] p-4 flex items-start justify-between flex-col md:flex-row gap-4">
           <div className="flex items-start gap-3">
             <svg
@@ -117,613 +202,194 @@ export default function Dashboard() {
             View Status
           </Link>
         </div>
+        )}
 
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="font-poppins font-bold text-3xl text-[#333] mb-2">
-            Welcome Back, John
+            Welcome Back, {user.firstName}!
           </h1>
-          <p className="text-[#4A5565]">
+          <p className="text-[#4A5565] text-[16px] font-inter">
             Here's what's happening with your workplace rights today
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Education Progress */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB]">
-                <div className="w-12 h-12 rounded-lg bg-[#0F766E] flex items-center justify-center mb-3">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 7V21M3 18C2.73478 18 2.48043 17.8946 2.29289 17.7071C2.10536 17.5196 2 17.2652 2 17V4C2 3.73478 2.10536 3.48043 2.29289 3.29289C2.48043 3.10536 2.73478 3 3 3H8C9.06087 3 10.0783 3.42143 10.8284 4.17157C11.5786 4.92172 12 5.93913 12 7C12 5.93913 12.4214 4.92172 13.1716 4.17157C13.9217 3.42143 14.9391 3 16 3H21C21.2652 3 21.5196 3.10536 21.7071 3.29289C21.8946 3.48043 22 3.73478 22 4V17C22 17.2652 21.8946 17.5196 21.7071 17.7071C21.5196 17.8946 21.2652 18 21 18H15C14.2044 18 13.4413 18.3161 12.8787 18.8787C12.3161 19.4413 12 20.2044 12 21C12 20.2044 11.6839 19.4413 11.1213 18.8787C10.5587 18.3161 9.79565 18 9 18H3Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className="text-xs text-[#9CA3AF] mb-1">Education Progress</div>
-                <div className="flex items-baseline gap-2">
-                  <div className="font-bold text-2xl text-[#333]">60%</div>
-                  <div className="text-xs text-[#0F766E] flex items-center gap-1">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path
-                        d="M6 9V3M3 6L6 3L9 6"
-                        stroke="#0F766E"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    +20%
-                  </div>
-                </div>
-                <div className="text-xs text-[#9CA3AF] mt-1">3 of 5 modules</div>
-              </div>
-
-              {/* Active Complaints */}
-              <Link 
-                to="/my-complaints"
-                className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB] hover:shadow-md transition-shadow"
-              >
-                <div className="w-12 h-12 rounded-lg bg-[#1E3A8A] flex items-center justify-center mb-3">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M6 22C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V4C4 3.46957 4.21071 2.96086 4.58579 2.58579C4.96086 2.21072 5.46957 2 6 2H14L20 8V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className="text-xs text-[#9CA3AF] mb-1">Active Complaints</div>
-                <div className="flex items-baseline gap-2">
-                  <div className="font-bold text-2xl text-[#333]">2</div>
-                  <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
-                    Update
-                  </span>
-                </div>
-                <div className="text-xs text-[#9CA3AF] mt-1">1 under review</div>
-              </Link>
-
-              {/* Resolved Cases */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB]">
-                <div className="w-12 h-12 rounded-lg bg-[#0F766E] flex items-center justify-center mb-3">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" />
-                    <path
-                      d="M9 12L11 14L15 10"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className="text-xs text-[#9CA3AF] mb-1">Resolved Cases</div>
-                <div className="font-bold text-2xl text-[#333]">1</div>
-                <div className="text-xs text-[#9CA3AF] mt-1">This month</div>
-              </div>
-
-              {/* AI Consultations */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-[#E5E7EB]">
-                <div className="w-12 h-12 rounded-lg bg-[#1E3A8A] flex items-center justify-center mb-3">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className="text-xs text-[#9CA3AF] mb-1">AI Consultations</div>
-                <div className="font-bold text-2xl text-[#333]">8</div>
-                <div className="text-xs text-[#9CA3AF] mt-1">Total sessions</div>
-              </div>
-            </div>
+        {/* Top Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 px-2">
+          <TopStat icon={book} label="Education Progress" value={`${progressPercent}%`} detail={`${completedCount} of ${REQUIRED_MODULES.length} modules`} trend="+20%" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
+          <TopStat icon={report} label="Active Complaints" value={complaintStats.active.toString()} detail="1 under review" badge="Update" corner="bg-[#1E3A8A]/20" iconBg="bg-[#1E3A8A]" />
+          <TopStat icon={whitecheckmark} label="Resolved Cases" value={complaintStats.resolved.toString()} detail="This month" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
+          <TopStat icon={chatbubble} label="AI Consultations" value="8" detail="Total sessions" corner="bg-[#B91C1C]/20" iconBg="bg-[#1E3A8A]" />
+        </div>
 
             {/* Quick Actions */}
-            <div>
-              <h2 className="font-poppins font-bold text-xl text-[#333] mb-4">
-                Quick Actions
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Continue Learning */}
-                <Link
-                  to="/learning"
-                  className="bg-gradient-to-br from-[#0F766E] to-[#0D9488] rounded-xl p-6 text-white hover:shadow-lg transition-shadow"
-                >
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mb-4"
-                  >
-                    <path
-                      d="M12 7V21M3 18C2.73478 18 2.48043 17.8946 2.29289 17.7071C2.10536 17.5196 2 17.2652 2 17V4C2 3.73478 2.10536 3.48043 2.29289 3.29289C2.48043 3.10536 2.73478 3 3 3H8C9.06087 3 10.0783 3.42143 10.8284 4.17157C11.5786 4.92172 12 5.93913 12 7C12 5.93913 12.4214 4.92172 13.1716 4.17157C13.9217 3.42143 14.9391 3 16 3H21C21.2652 3 21.5196 3.10536 21.7071 3.29289C21.8946 3.48043 22 3.73478 22 4V17C22 17.2652 21.8946 17.5196 21.7071 17.7071C21.5196 17.8946 21.2652 18 21 18H15C14.2044 18 13.4413 18.3161 12.8787 18.8787C12.3161 19.4413 12 20.2044 12 21C12 20.2044 11.6839 19.4413 11.1213 18.8787C10.5587 18.3161 9.79565 18 9 18H3Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <h3 className="font-semibold text-lg mb-2">Continue Learning</h3>
-                  <p className="text-sm text-white/90 mb-4">
-                    Resume your rights education modules
-                  </p>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    Go to Education hub
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M3.33301 8H12.6663M12.6663 8L8.66634 4M12.6663 8L8.66634 12"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </Link>
-
-                {/* File New Complaint */}
-                <Link
-                  to="/file-complaint"
-                  className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] rounded-xl p-6 text-white hover:shadow-lg transition-shadow"
-                >
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mb-4"
-                  >
-                    <path
-                      d="M6 22C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V4C4 3.46957 4.21071 2.96086 4.58579 2.58579C4.96086 2.21072 5.46957 2 6 2H14L20 8V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <h3 className="font-semibold text-lg mb-2">File New Complaint</h3>
-                  <p className="text-sm text-white/90 mb-4">
-                    Report a workplace rights violation
-                  </p>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    Start Complaint
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M3.33301 8H12.6663M12.6663 8L8.66634 4M12.6663 8L8.66634 12"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </Link>
-
-                {/* Ask AI Assistant */}
-                <Link
-                  to="/ai-assistant"
-                  className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] rounded-xl p-6 text-white hover:shadow-lg transition-shadow"
-                >
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mb-4"
-                  >
-                    <path
-                      d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <h3 className="font-semibold text-lg mb-2">Ask AI Assistant</h3>
-                  <p className="text-sm text-white/90 mb-4">
-                    Get instant guidance on your rights
-                  </p>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    Start Chat
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M3.33301 8H12.6663M12.6663 8L8.66634 4M12.6663 8L8.66634 12"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </Link>
+            <section>
+              <h3 className="text-[24px] font-poppins font-bold text-gray-800 mb-6">Quick Actions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <ActionCard 
+                icon={book}
+                title="Continue Learning" desc="Resume your rights education modules" btnText="Go to Education hub" color="bg-[#0D7A6F]" onClick={() => navigate('/learning')} />
+                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={!user.educated} onClick={() => navigate('/file-complaint')} />
+                <ActionCard icon={chatbubble} title="Ask AI Assistant" desc="Get instant guidance on your rights" btnText="Start Chat" color="bg-[#2D4495]"  onClick={() => navigate('/ai-assistant')} />
               </div>
-            </div>
+            </section>
+
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-sm w-max-full">
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[#E5E7EB]">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-poppins font-bold text-xl text-[#333]">
-                  Recent Activity
-                </h2>
-                <button className="text-sm text-[#1E3A8A] font-semibold hover:text-[#0F766E]">
-                  View All
-                </button>
+            <section className="lg:col-span-8 bg-white rounded-xl border border-gray-300 p-8 shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-[20px] font-bold font-poppins  text-gray-800">Recent Activity</h3>
+                <button className="text-[14px] font-inter font-semibold text-[#1E3A8A] hover:underline">View All</button>
               </div>
-              <div className="space-y-4">
-                {/* Activity 1 */}
-                <div className="flex gap-3 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="flex-shrink-0 mt-0.5"
-                  >
-                    <path
-                      d="M5 16.6667C4.55797 16.6667 4.13405 16.491 3.82149 16.1785C3.50893 15.8659 3.33333 15.442 3.33333 15V3.33333C3.33333 2.8913 3.50893 2.46738 3.82149 2.15482C4.13405 1.84226 4.55797 1.66667 5 1.66667H11.6667L16.6667 6.66667V15C16.6667 15.442 16.491 15.8659 16.1785 16.1785C15.8659 16.491 15.442 16.6667 15 16.6667H5Z"
-                      stroke="#1E3A8A"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-[#333] mb-1">
-                      Complaint #1234 Updated
-                    </div>
-                    <div className="text-sm text-[#9CA3AF] mb-1">
-                      Your complaint has been reviewed by HR
-                    </div>
-                    <div className="text-xs text-[#9CA3AF]">2 hours ago</div>
-                  </div>
-                </div>
-
-                {/* Activity 2 */}
-                <div className="flex gap-3 p-4 bg-[#F0FDF4] rounded-lg border border-[#BBF7D0]">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="flex-shrink-0 mt-0.5"
-                  >
-                    <circle
-                      cx="10"
-                      cy="10"
-                      r="8.33333"
-                      stroke="#0F766E"
-                      strokeWidth="1.5"
-                    />
-                    <path
-                      d="M7.5 10L9.16667 11.6667L12.5 8.33333"
-                      stroke="#0F766E"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-[#333] mb-1">
-                      Module Completed
-                    </div>
-                    <div className="text-sm text-[#9CA3AF] mb-1">
-                      You completed 'Understanding Workplace Harassment'
-                    </div>
-                    <div className="text-xs text-[#9CA3AF]">1 day ago</div>
-                  </div>
-                </div>
-
-                {/* Activity 3 */}
-                <div className="flex gap-3 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="flex-shrink-0 mt-0.5"
-                  >
-                    <path
-                      d="M17.5 12.5C17.5 12.942 17.3244 13.3659 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z"
-                      stroke="#B91C1C"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-[#333] mb-1">
-                      AI Consultation Saved
-                    </div>
-                    <div className="text-sm text-[#9CA3AF] mb-1">
-                      Chat transcript saved to your documents
-                    </div>
-                    <div className="text-xs text-[#9CA3AF]">3 days ago</div>
-                  </div>
-                </div>
-
-                {/* Activity 4 */}
-                <div className="flex gap-3 p-4 bg-[#FEFCE8] rounded-lg border border-[#FDE047]">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="flex-shrink-0 mt-0.5"
-                  >
-                    <path
-                      d="M10 6.66667V10M10 13.3333H10.0083M18.3333 10C18.3333 14.6024 14.6024 18.3333 10 18.3333C5.39763 18.3333 1.66667 14.6024 1.66667 10C1.66667 5.39763 5.39763 1.66667 10 1.66667C14.6024 1.66667 18.3333 5.39763 18.3333 10Z"
-                      stroke="#F0B100"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-[#333] mb-1">
-                      Action Required
-                    </div>
-                    <div className="text-sm text-[#9CA3AF] mb-1">
-                      Complete verification to unlock complaint submission
-                    </div>
-                    <div className="text-xs text-[#9CA3AF]">5 days ago</div>
-                  </div>
-                </div>
+              <div className="space-y-3">
+                {activities.map((log, i) => (
+                  <ActivityItem key={i} log={log} />
+                ))}
               </div>
-            </div>
-          </div>
+            </section>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Education Progress */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[#E5E7EB]">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-base text-[#333]">
-                  Education Progress
-                </h3>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16.6667 10.833V4.16634C16.6667 3.94533 16.5789 3.73337 16.4226 3.57709C16.2663 3.42081 16.0544 3.33301 15.8333 3.33301H4.16667C3.94565 3.33301 3.73369 3.42081 3.57741 3.57709C3.42113 3.73337 3.33333 3.94533 3.33333 4.16634V15.833C3.33333 16.054 3.42113 16.266 3.57741 16.4223C3.73369 16.5785 3.94565 16.6663 4.16667 16.6663H10.8333"
-                    stroke="#0F766E"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13.3333 15L15.8333 17.5L20.8333 12.5"
-                    stroke="#0F766E"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div className="space-y-4">
-                {/* Module 1 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#333]">Workplace Harassment</span>
-                    <span className="text-xs font-semibold text-[#0F766E]">100%</span>
-                  </div>
-                  <div className="w-full bg-[#E5E7EB] rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-[#0F766E] to-[#0D9488] h-2 rounded-full"
-                      style={{ width: "100%" }}
-                    ></div>
-                  </div>
-                </div>
+          <div className="lg:col-span-4 space-y-6">
+            <EducationSidebar modules={REQUIRED_MODULES} user={user} />
+            <div className="bg-white rounded-xl border border-gray-300 p-8 shadow-lg">
+               <h4 className="font-bold text-gray-800 font-poppins text-[16px] mb-4">Quick Links</h4>
+               <div className="space-y-4">
+                  <LinkItem 
+                  onClick={() => navigate('/learning')}
+                  icon={<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+  <path d="M9 5.25V15.75M2.25 13.5C2.11739 13.5 1.99021 13.4473 1.89645 13.3536C1.80268 13.2598 1.75 13.1326 1.75 13V3C1.75 2.86739 1.80268 2.74021 1.89645 2.64645C1.99021 2.55268 2.11739 2.5 2.25 2.5H6C6.79565 2.5 7.55871 2.81607 8.12132 3.37868C8.68393 3.94129 9 4.70435 9 5.5C9 4.70435 9.31607 3.94129 9.87868 3.37868C10.4413 2.81607 11.2044 2.5 12 2.5H15.75C15.8826 2.5 16.0098 2.55268 16.1036 2.64645C16.1973 2.74021 16.25 2.86739 16.25 3V13C16.25 13.1326 16.1973 13.2598 16.1036 13.3536C16.0098 13.4473 15.8826 13.5 15.75 13.5H11.25C10.6533 13.5 10.081 13.7371 9.65901 14.159C9.23705 14.581 9 15.1533 9 15.75C9 15.1533 8.76295 14.581 8.34099 14.159C7.91903 13.7371 7.34674 13.5 6.75 13.5H2.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+</svg>} label="Education Hub" />
 
-                {/* Module 2 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#333]">Discrimination Laws</span>
-                    <span className="text-xs font-semibold text-[#0F766E]">100%</span>
-                  </div>
-                  <div className="w-full bg-[#E5E7EB] rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-[#0F766E] to-[#0D9488] h-2 rounded-full"
-                      style={{ width: "100%" }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Module 3 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#333]">Wage & Hour Rights</span>
-                    <span className="text-xs font-semibold text-[#F0B100]">80%</span>
-                  </div>
-                  <div className="w-full bg-[#E5E7EB] rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-[#0F766E] to-[#0D9488] h-2 rounded-full"
-                      style={{ width: "80%" }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Module 4 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#333]">Retaliation Protection</span>
-                    <span className="text-xs font-semibold text-[#9CA3AF]">0%</span>
-                  </div>
-                  <div className="w-full bg-[#E5E7EB] rounded-full h-2">
-                    <div className="h-2 rounded-full" style={{ width: "0%" }}></div>
-                  </div>
-                </div>
-
-                {/* Module 5 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#333]">Filing Procedures</span>
-                    <span className="text-xs font-semibold text-[#9CA3AF]">0%</span>
-                  </div>
-                  <div className="w-full bg-[#E5E7EB] rounded-full h-2">
-                    <div className="h-2 rounded-full" style={{ width: "0%" }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                className="w-full mt-4 py-3 rounded-lg font-semibold text-sm text-white transition-all duration-300 hover:shadow-lg"
-                style={{
-                  background: "linear-gradient(90deg, #1E3A8A 0%, #0F766E 100%)",
-                }}
-              >
-                Continue
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  className="inline ml-2"
-                  fill="none"
-                >
-                  <path
-                    d="M3.33301 8H12.6663M12.6663 8L8.66634 4M12.6663 8L8.66634 12"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Quick Links */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[#E5E7EB]">
-              <h3 className="font-semibold text-base text-[#333] mb-4">Quick Links</h3>
-              <div className="space-y-3">
-                <Link
-                  to="/learning"
-                  className="flex items-center gap-3 text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M9 5.25V15.75M2.25 13.5C2.11739 13.5 1.99021 13.4473 1.89645 13.3536C1.80268 13.2598 1.75 13.1326 1.75 13V3C1.75 2.86739 1.80268 2.74021 1.89645 2.64645C1.99021 2.55268 2.11739 2.5 2.25 2.5H6C6.79565 2.5 7.55871 2.81607 8.12132 3.37868C8.68393 3.94129 9 4.70435 9 5.5C9 4.70435 9.31607 3.94129 9.87868 3.37868C10.4413 2.81607 11.2044 2.5 12 2.5H15.75C15.8826 2.5 16.0098 2.55268 16.1036 2.64645C16.1973 2.74021 16.25 2.86739 16.25 3V13C16.25 13.1326 16.1973 13.2598 16.1036 13.3536C16.0098 13.4473 15.8826 13.5 15.75 13.5H11.25C10.6533 13.5 10.081 13.7371 9.65901 14.159C9.23705 14.581 9 15.1533 9 15.75C9 15.1533 8.76295 14.581 8.34099 14.159C7.91903 13.7371 7.34674 13.5 6.75 13.5H2.25Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Education Hub
-                </Link>
-                <Link
-                  to="/learning"
-                  className="flex items-center gap-3 text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M4.5 16.5C4.10218 16.5 3.72064 16.342 3.43934 16.0607C3.15804 15.7794 3 15.3978 3 15V3C3 2.60218 3.15804 2.22064 3.43934 1.93934C3.72064 1.65804 4.10218 1.5 4.5 1.5H10.5L15 6V15C15 15.3978 14.842 15.7794 14.5607 16.0607C14.2794 16.342 13.8978 16.5 13.5 16.5H4.5Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  My Complaints
-                </Link>
-                <Link
-                  to="/learning"
-                  className="flex items-center gap-3 text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M15 9.75C15 13.5 12.375 15.375 9.255 16.4625C9.09165 16.5121 8.91637 16.5092 8.755 16.4542C6.375 15.375 3 13.5 3 9.75V3.75C3 3.55109 3.07902 3.36032 3.21967 3.21967C3.36032 3.07902 3.55109 3 3.75 3C5.25 3 7.125 2.4 8.43 1.71C8.52639 1.64966 8.6378 1.61719 8.75151 1.61719C8.86522 1.61719 8.97663 1.64966 9.073 1.71C10.3825 2.4075 12.25 3 13.75 3C13.9489 3 14.1397 3.07902 14.2803 3.21967C14.421 3.36032 14.5 3.55109 14.5 3.75V9.75Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Anonymous Report
-                </Link>
-                <Link
-                  to="/learning"
-                  className="flex items-center gap-3 text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M4.5 16.5C4.10218 16.5 3.72064 16.342 3.43934 16.0607C3.15804 15.7794 3 15.3978 3 15V3C3 2.60218 3.15804 2.22064 3.43934 1.93934C3.72064 1.65804 4.10218 1.5 4.5 1.5H10.5L15 6V15C15 15.3978 14.842 15.7794 14.5607 16.0607C14.2794 16.342 13.8978 16.5 13.5 16.5H4.5Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Documents
-                </Link>
-                <Link
-                  to="/complete-profile"
-                  className="flex items-center gap-3 text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors"
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                      d="M9 9C10.2426 9 11.25 7.99264 11.25 6.75C11.25 5.50736 10.2426 4.5 9 4.5C7.75736 4.5 6.75 5.50736 6.75 6.75C6.75 7.99264 7.75736 9 9 9Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M3.75 15.75V14.25C3.75 13.6533 3.98705 13.081 4.40901 12.659C4.83097 12.2371 5.40326 12 6 12H12C12.5967 12 13.169 12.2371 13.591 12.659C14.0129 13.081 14.25 13.6533 14.25 14.25V15.75"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Profile Settings
-                </Link>
-              </div>
+{/*Complaints quick link*/}
+                  <LinkItem 
+                  onClick={() => navigate('/my-complaints')}
+                  icon={<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 16.5C4.10218 16.5 3.72064 16.342 3.43934 16.0607C3.15804 15.7794 3 15.3978 3 15V3C3 2.60218 3.15804 2.22064 3.43934 1.93934C3.72064 1.65804 4.10218 1.5 4.5 1.5H10.5L15 6V15C15 15.3978 14.842 15.7794 14.5607 16.0607C14.2794 16.342 13.8978 16.5 13.5 16.5H4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="My Complaints" />
+                  <LinkItem icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.37468 8.23029C1.31912 8.08061 1.31912 7.91596 1.37468 7.76629C1.91581 6.45419 2.83435 5.33231 4.01386 4.54289C5.19336 3.75346 6.58071 3.33203 8.00001 3.33203C9.41932 3.33203 10.8067 3.75346 11.9862 4.54289C13.1657 5.33231 14.0842 6.45419 14.6253 7.76629C14.6809 7.91596 14.6809 8.08061 14.6253 8.23029C14.0842 9.54238 13.1657 10.6643 11.9862 11.4537C10.8067 12.2431 9.41932 12.6645 8.00001 12.6645C6.58071 12.6645 5.19336 12.2431 4.01386 11.4537C2.83435 10.6643 1.91581 9.54238 1.37468 8.23029Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>} label="Anonymous Report" onClick={() => navigate('/whistleblowing')} />
+                  <LinkItem icon={<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 16.5C4.10218 16.5 3.72064 16.342 3.43934 16.0607C3.15804 15.7794 3 15.3978 3 15V3C3 2.60218 3.15804 2.22064 3.43934 1.93934C3.72064 1.65804 4.10218 1.5 4.5 1.5H10.5L15 6V15C15 15.3978 14.842 15.7794 14.5607 16.0607C14.2794 16.342 13.8978 16.5 13.5 16.5H4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="Documents" />
+                  <LinkItem 
+                  icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M21.3327 28V25.3333C21.3327 23.9188 20.7708 22.5623 19.7706 21.5621C18.7704 20.5619 17.4138 20 15.9993 20H7.99935C6.58486 20 5.22831 20.5619 4.22811 21.5621C3.22792 22.5623 2.66602 23.9188 2.66602 25.3333V28" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.334 4.17188C22.4777 4.46837 23.4905 5.13623 24.2136 6.07063C24.9366 7.00502 25.3289 8.15306 25.3289 9.33454C25.3289 10.516 24.9366 11.6641 24.2136 12.5985C23.4905 13.5329 22.4777 14.2007 21.334 14.4972" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M29.334 27.9985V25.3319C29.3331 24.1502 28.9398 23.0022 28.2158 22.0683C27.4918 21.1344 26.4782 20.4673 25.334 20.1719" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.9993 14.6667C14.9449 14.6667 17.3327 12.2789 17.3327 9.33333C17.3327 6.38781 14.9449 4 11.9993 4C9.05383 4 6.66602 6.38781 6.66602 9.33333C6.66602 12.2789 9.05383 14.6667 11.9993 14.6667Z" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>} label="Profile Settings" />
+               </div>
             </div>
           </div>
-        </div>
+         </div>
       </main>
+    </div>
+  );
+}
+
+// Sub-components
+function TopStat({ icon, label, value, detail, trend, badge, corner, iconBg }) {
+  return (
+    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+      <div className={`absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-40 ${corner}`} />
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-4 ${iconBg}`}>
+      <img src={icon} alt={label} className="w-6 h-6 object-contain stroke-white text-white" />
+      </div>
+      <p className="text-[16px] text-gray-400 font-inter font-bold tracking-wider">{label}</p>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[30px] font-inter font-black text-gray-800">{value}</span>
+        {trend && <span className="text-[10px] font-bold text-teal-600">↗ {trend}</span>}
+        {badge && <span className="text-[9px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold uppercase">{badge}</span>}
+      </div>
+      <p className="text-[12px] font-inter text-gray-400 mt-1">{detail}</p>
+    </div>
+  );
+}
+
+function ActionCard({ icon, title, desc, btnText, color, locked, onClick }) {
+  return (
+    <div className={`${color} p-6 rounded-2xl text-white relative flex flex-col justify-between min-h-[200px] gap-4 mb-[20px]`}>
+      {locked && <span className="absolute top-4 right-4 bg-[#F0B100] text-[#78350F] text-[9px] font-semibold px-2 py-1 rounded-full">Locked</span>}
+      <div>
+        
+          <img src={icon} alt={title} className="w-6 h-6 mb-4 object-contain" />
+        <h4 className="text-[20px] font-poppins font-bold mb-2">{title}</h4>
+        <p className="text-white/70 text-[14px] font-inter leading-relaxed">{desc}</p>
+      </div>
+      <button onClick={onClick} className="bg-white/10 hover:bg-white/20 transition-colors  h-max-[48px] font-inter py-2.5 w-fit px-5 rounded-xl text-[16px] font-bold flex items-center justify-center gap-2">
+        {btnText} <span>→</span>
+      </button>
+    </div>
+  );
+}
+
+function ActivityItem({ log }) {
+  // Determine color theme based on activity type
+  const isDanger = log.action.includes("Verification") || log.action.includes("Action Required");
+  const isEdu = log.action.includes("Module") || log.action.includes("Lesson");
+  
+  const bgColor = isDanger ? 'bg-[#FEFCE8]' : isEdu ? 'bg-[#F0FDF4]' : 'bg-[#EFF6FF]';
+  const borderColor = isDanger ? 'border-yellow-100' : isEdu ? 'border-green-100' : 'border-blue-100';
+
+  return (
+    <div className={`p-4 rounded-xl border flex items-center gap-4 transition-all hover:shadow-sm ${bgColor} ${borderColor}`}>
+      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm text-gray-500">
+        {/* Call the dynamic icon function */}
+        {getActivityIcon(log.action)}
+      </div>
+      <div className="flex-1">
+        <h5 className="text-[16px] font-bold text-gray-800 font-inter">{log.action}</h5>
+        <p className="text-[12px] text-gray-500 leading-relaxed font-inter">{log.details}</p>
+         <span className="text-[12px] text-gray-400 font-medium font-inter whitespace-nowrap">{log.timestamp}</span>
+      </div>
+    </div>
+  );
+}
+
+function EducationSidebar({ modules, user ={} }) {
+  const navigate = useNavigate();
+  if (!user) return null;
+  return (
+    <div className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg">
+      <div className="flex justify-between items-center mb-6">
+        <h4 className="font-bold text-gray-800 font-poppins  text-[16px]">Education Progress</h4>
+        <span className="text-lg">
+          <img src={ribbon} alt="Education" className="w-5 h-5 object-contain" />
+        </span>
+      </div>
+      
+      <div className="space-y-5 mb-8">
+        {modules.map((m) => {
+          
+          const progress = isModuleCompleted(user, m.id);
+          
+          return (
+            <div key={m.id}>
+              <div className="flex justify-between text-[11px] font-bold mb-1.5">
+                <span className="text-gray-700 font-inter text-[16px] font-semibold">{m.title}</span>
+                <span className="text-gray-400 font-inter  text-[12px]">{progress}%</span>
+              </div>
+              <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-[#0F766E] to-[#00BBA7] h-full rounded-full transition-all duration-700 ease-out" 
+                  style={{ width: `${progress}%` }} 
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      <button 
+        onClick={() => navigate('/learning')}
+        className="w-full bg-gradient-to-b from-[#1e3a8a] to-[#0F766E] hover:bg-[#162d6b] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+      >
+        Continue Learning <span>→</span>
+      </button>
+    </div>
+  );
+}
+
+function LinkItem({ icon, label, onClick }) {
+  return (
+    <div className="flex items-center gap-3  text-gray-600 hover:text-[#1D4ED8] cursor-pointer group" onClick={onClick}>
+      <span className="text-gray-400 group-hover:text-[#1D4ED8]">
+        <div className="text-gray-600 group-hover:text-[#1D4ED8] transition-colors flex items-center justify-center w-6 h-6">
+        {icon} 
+        </div>
+      </span>
+      <span className="text-[14px] font-bold font-inter">{label}</span>
     </div>
   );
 }

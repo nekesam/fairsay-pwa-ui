@@ -1,9 +1,13 @@
 import Logo from '../components/Logo';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { APP_NAME } from '../utils/constants';
+import { useAppContext } from '../context/AppContext';
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const { login } = useAppContext();
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error"});
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -11,10 +15,17 @@ export default function SignIn() {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setAlert({ show: false, message: "", type: "error"});
+    const result = await login(formData.email, formData.password);
+    if (result.success) {
+    
     // Here you would handle authentication
     navigate('/dashboard');
+    } else {
+      setAlert({ show: true, message: result.message, type: "error"});
+    }
   };
 
   return (
@@ -26,8 +37,10 @@ export default function SignIn() {
     >
       <div className="w-full max-w-[504px] flex flex-col items-center gap-7">
         {/* Logo */}
-        <Logo />
-
+         <div className="flex items-center gap-2">
+                    <div className="w-10 h-10"><Logo /></div>
+                    <span className="text-[36px] font-bold font-poppins text-[#1e3a8a]">{APP_NAME}</span>
+                  </div>
         {/* Main Card */}
         <div className="w-full rounded-2xl bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-7">
           <div className="mb-7 text-center">
@@ -38,6 +51,16 @@ export default function SignIn() {
               Sign in to your account to continue
             </p>
           </div>
+
+
+       {/*For rendering the alert*/}
+       {alert.show && (
+         <div className={`mb-6 p-4 rounded-lg text-sm font-medium border ${
+           alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+         }`}>
+           {alert.message}
+         </div>
+       )}
 
           <form onSubmit={handleSubmit} className="space-y-[18px]">
             {/* Email Address */}
@@ -273,6 +296,7 @@ export default function SignIn() {
           Back to Home
         </Link>
       </div>
+      
     </div>
   );
 }

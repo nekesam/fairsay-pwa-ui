@@ -1,26 +1,7 @@
 export default function Logo() {
   return (
     <div className="flex items-center gap-2 h-9">
-      <svg
-        width="36"
-        height="36"
-        viewBox="0 0 40 40"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M20 2.5L3.75 10L20 17.5L36.25 10L20 2.5Z"
-          fill="#1E3A8A"
-        />
-        <path
-          d="M3.75 17.5V27.5L20 35L36.25 27.5V17.5L20 25L3.75 17.5Z"
-          fill="#0F766E"
-        />
-        <circle cx="20" cy="20" r="3" fill="white" />
-      </svg>
-      <span className="font-['Poppins'] font-bold text-[27px] leading-[27px] text-[#1E3A8A]">
-        FairSay
-      </span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 30" fill="none"><path d="M22.6657 15.9982C22.6657 22.6644 17.9994 25.9974 12.4531 27.9306C12.1627 28.029 11.8472 28.0243 11.5599 27.9173C6.0003 25.9974 1.33398 22.6644 1.33398 15.9982V6.66556C1.33398 6.31197 1.47445 5.97286 1.72448 5.72283C1.97451 5.4728 2.31362 5.33233 2.66722 5.33233C5.33368 5.33233 8.66677 3.73245 10.9866 1.70594C11.269 1.46462 11.6283 1.33203 11.9998 1.33203C12.3714 1.33203 12.7307 1.46462 13.0131 1.70594C15.3463 3.74578 18.666 5.33233 21.3325 5.33233C21.6861 5.33233 22.0252 5.4728 22.2752 5.72283C22.5253 5.97286 22.6657 6.31197 22.6657 6.66556V15.9982Z" stroke="#0F766E" stroke-width="2.66647" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
   );
 }

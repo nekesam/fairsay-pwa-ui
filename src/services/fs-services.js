@@ -1,5 +1,7 @@
-//For feedback on reports, such as ensuring that the matter has actually been resolved 
-//Using the likert scale for feedback, and allowing users to provide comments on their experience with the resolution process. This will help us understand the effectiveness of the resolution and identify areas for improvement in the process.
+//For the API RAG system
+
+import api from '../services/api';
+
 //Waiting for api integration
 
 export const askFairSayAI = async (query) => {
@@ -17,6 +19,23 @@ export const askFairSayAI = async (query) => {
   };
 
 
+  /* To save time for when the api comes through
+
+export const askFairSayAI = async (query) => {
+  try {
+    const res = await api.post('/ai/ask', { query });
+    return res.data; 
+  } catch (err) {
+    console.error("AI service failed", err);
+    return { 
+      answer: "I'm sorry, the FairSay AI is currently unavailable. Please check the Labour Act documentation directly.", 
+      links: [] 
+    };
+  }
+};
+
+/*
+//Not needed as of now
 export const submitFeedback = (complaintId, feedbackData) => {
   const allFeedback = JSON.parse(localStorage.getItem('fs_feedback') || '[]');
 
@@ -30,4 +49,4 @@ localStorage.setItem('fs_feedback', JSON.stringify([newReport, ...allFeedback]))
 
 return { success: true };
 
-};
+}; */

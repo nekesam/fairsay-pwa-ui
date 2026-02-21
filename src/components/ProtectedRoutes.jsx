@@ -2,6 +2,7 @@
 
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import { APP_STEPS } from "../utils/constants";
 
 
 const ProtectedRoutes = ({ children, step }) => {
@@ -15,13 +16,19 @@ const ProtectedRoutes = ({ children, step }) => {
             </div>
     ); 
 
+    //For the whistleblower bypass
     if (user?.isWhistleblower) return children;
 
+    //If not logged in, redirect to sign in
     if (!user) return <Navigate to="/sign-in" state={{ from: location }} replace />;
 
-    if (step === 'emailVerified' && !user.emailVerified) return <Navigate to="/verify-email" replace />;
-    if (step === 'verified' && !user.isVerified)  return <Navigate to="/employee-verification" replace />;
-    if (step === 'educated' && !user.hasCompletedEducation) return <Navigate to="/learning" replace />;
+    //To check verification
+    if (step === APP_STEPS.PROFILE_COMPLETION && !user.isVerified) {
+         return <Navigate to="/account-success" replace />;
+    }
+   
+    if (step === APP_STEPS.EDUCATION && !user.hasCompletedEducation) { return <Navigate to="/learning" replace />;
+    }
 
     return children;
     

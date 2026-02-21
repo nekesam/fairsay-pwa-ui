@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { getInitials } from "../utils/logic-helpers";
+import { AppContext, useAppContext } from "../context/AppContext";
 import Logo from "../components/Logo";
 
 export default function AIAssistant() {
+  const {user, logout} = useAppContext();
+  const navigate= useNavigate();
   const [messages, setMessages] = useState([
     {
       type: "assistant",
@@ -62,6 +67,13 @@ export default function AIAssistant() {
     handleSendMessage(question);
   };
 
+  //To handle user logout, clearing session and redirecting to sign-in page.
+  const handleLogout = () => {
+    logout();
+    navigate('/sign-in');
+  };
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
@@ -94,19 +106,20 @@ export default function AIAssistant() {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">JD</div>
+              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">{getInitials(user)}</div>
               <div className="hidden md:block">
-                <div className="font-semibold text-sm text-[#333]">John Divine</div>
-                <div className="text-xs text-[#9CA3AF]">Software Engineer</div>
+                <div className="font-semibold text-sm text-[#333]">{user.firstName}{user.lastName}</div>
+                <div className="text-xs text-[#9CA3AF]">{user.job_title || 'Add Job Title'}</div>
               </div>
             </div>
-            <Link to="/sign-in" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+
+            <button onClick={handleLogout} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M7.5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7.5" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M13.3333 14.1667L17.5 10L13.3333 5.83334" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M17.5 10H7.5" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </Link>
+            </button>
           </div>
         </div>
       </header>
