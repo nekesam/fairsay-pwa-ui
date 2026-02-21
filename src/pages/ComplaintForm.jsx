@@ -1,29 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
+import { COMPLAINT_CATEGORIES, COMPLAINT_STEPS, IMPACT_TYPES, INITIAL_COMPLAINT_FORM_DATA } from "../utils/constants";
+import api from '../services/api'
 
-const STEPS = [
-  { number: 1, label: "Basic Info" },
-  { number: 2, label: "Incident Details" },
-  { number: 3, label: "Parties Involved" },
-  { number: 4, label: "Impact & Evidence" },
-  { number: 5, label: "Review & Submit" },
-];
 
-const VIOLATION_CATEGORIES = [
-  "Wage & Hour Violations",
-  "Workplace Harassment",
-  "Discrimination",
-  "Safety Violations",
-  "Retaliation",
-  "Privacy Violations",
-  "Other",
-];
 
 function StepIndicator({ currentStep }) {
   return (
     <div className="flex items-start gap-0 w-full">
-      {STEPS.map((step, idx) => {
+      {COMPLAINT_STEPS.map((step, idx) => {
         const isCompleted = currentStep > step.number;
         const isActive = currentStep === step.number;
         return (
@@ -48,7 +34,7 @@ function StepIndicator({ currentStep }) {
                 {step.label}
               </span>
             </div>
-            {idx < STEPS.length - 1 && (
+            {idx < COMPLAINT_STEPS.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mt-4 mx-1 transition-all
                   ${isCompleted ? "bg-[#0F766E]" : "bg-gray-200"}`}
@@ -61,30 +47,6 @@ function StepIndicator({ currentStep }) {
   );
 }
 
-const initialFormData = {
-  violationCategory: "",
-  complaintTitle: "",
-  detailedDescription: "",
-  dateOfIncident: "",
-  timeOfIncident: "",
-  location: "",
-  isOngoing: false,
-  personsInvolved: "",
-  jobTitle: "",
-  department: "",
-  hasWitnesses: false,
-  witnessInfo: "",
-  impactTypes: [],
-  evidenceDescription: "",
-  evidenceFiles: [],
-  hasPreviouslyReported: false,
-  reportedTo: "",
-  dateReported: "",
-  actionTaken: "",
-  desiredOutcome: "",
-  keepConfidential: true,
-};
-
 function Step1({ data, onChange }) {
   return (
     <div>
@@ -95,16 +57,16 @@ function Step1({ data, onChange }) {
 
       <div className="mb-4">
         <label className="block text-xs font-semibold text-gray-800 mb-1.5">
-          Violation Category <span className="text-red-500">*</span>
+          Complaint Category <span className="text-red-500">*</span>
         </label>
         <select
-          value={data.violationCategory}
-          onChange={(e) => onChange({ violationCategory: e.target.value })}
+          value={data.complaintCategory}
+          onChange={(e) => onChange({ complaintCategory: e.target.value })}
           className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] text-gray-700"
         >
           <option value="">Select a category</option>
-          {VIOLATION_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
+          {COMPLAINT_CATEGORIES.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.label}</option>
           ))}
         </select>
       </div>
@@ -297,13 +259,6 @@ function Step3({ data, onChange }) {
   );
 }
 
-const IMPACT_TYPES = [
-  { id: "emotional", label: "Emotional/Mental", description: "Stress, anxiety, depression" },
-  { id: "financial", label: "Financial", description: "Lost wages, expenses" },
-  { id: "physical", label: "Physical", description: "Injury, health issues" },
-  { id: "career", label: "Career", description: "Demotion, missed promotion" },
-];
-
 function Step4({ data, onChange }) {
   const toggleImpact = (id) => {
     const current = data.impactTypes;
@@ -476,7 +431,7 @@ function Step5({ data, onChange }) {
         <h3 className="text-xs font-bold text-gray-800 mb-2.5">Complaint Summary</h3>
         <div className="space-y-1.5">
           {[
-            { label: "Category:", value: data.violationCategory || "—" },
+            { label: "Category:", value: data.complaintCategory || "—" },
             { label: "Incident Date:", value: data.dateOfIncident || "—" },
             { label: "Location:", value: data.location || "—" },
             { label: "Evidence Files:", value: data.evidenceFiles.length > 0 ? `${data.evidenceFiles.length} file(s)` : "None" },
@@ -503,7 +458,11 @@ function Step5({ data, onChange }) {
 export default function ComplaintForm() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState(INITIAL_COMPLAINT_FORM_DATA);
+  
+  //For loading and error states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const updateFormData = (partial) => {
     setFormData((prev) => ({ ...prev, ...partial }));
@@ -517,8 +476,51 @@ export default function ComplaintForm() {
     if (currentStep > 1) setCurrentStep((s) => s - 1);
   };
 
-  const handleSubmit = () => {
-    navigate("/complaint-success");
+  //For the submit handler
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      //To compile the data into a single formatted string
+      const compiledDescription = `
+        PRIMARY COMPLAINT:
+        ${formData.detailedDescription}
+
+        --- INCIDENT DETAILS ---
+        Date & Time: ${formData.dateOfIncident} at ${formData.timeOfIncident || 'Not specified'}
+        Location: ${formData.location}
+        Ongoing Issue: ${formData.isOngoing ? 'Yes' : 'No'}
+
+        --- PARTIES INVOLVED ---
+        Accused: ${formData.personsInvolved} (${formData.jobTitle}, ${formData.department})
+        Witnesses: ${formData.hasWitnesses ? formData.witnessInfo : 'None reported'}
+
+        --- IMPACT & RESOLUTION ---
+        Impact Types: ${formData.impactTypes.length > 0 ? formData.impactTypes.join(', ') : 'None specified'}
+        Evidence Available: ${formData.evidenceDescription || 'None described'}
+        Previously Reported: ${formData.hasPreviouslyReported ? `Yes, to ${formData.reportedTo} on ${formData.dateReported}. Action taken: ${formData.actionTaken}` : 'No'}
+        Desired Outcome: ${formData.desiredOutcome || 'Not specified'}
+      `;
+
+      // Map exactly the 4 keys to match the backend
+      const payload = {
+        complaint_type: formData.complaintCategory,
+        title: formData.complaintTitle,
+        description: compiledDescription,
+        is_anonymous: formData.keepConfidential
+      };
+
+      const res = await api.post('/complaints', payload);
+
+      navigate("/complaint-success", { state: { trackingId: res.data.tracking_id } });
+
+    } catch (err) {
+      console.error("Submission failed:", err);
+      setSubmitError(err.response?.data?.message || "Failed to submit complaint. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -588,13 +590,21 @@ export default function ComplaintForm() {
           <div className="bg-white rounded-xl p-5 sm:p-7 shadow-sm border border-gray-100">
             {renderStep()}
 
+            {/* Error UI */}
+            {submitError && currentStep === 5 && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+                <p className="font-semibold mb-0.5">Submission Error</p>
+                <p>{submitError}</p>
+              </div>
+            )}
+
             {/* Navigation buttons */}
             <div className="flex items-center justify-between mt-7 pt-5 border-t border-gray-100">
               <button
                 onClick={handleBack}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || isSubmitting}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold border transition-all
-                  ${currentStep === 1
+                  ${(currentStep === 1 || isSubmitting)
                     ? "border-gray-200 text-gray-300 cursor-not-allowed"
                     : "border-gray-300 text-gray-700 hover:bg-gray-50"
                   }`}
@@ -606,13 +616,20 @@ export default function ComplaintForm() {
               </button>
               <button
                 onClick={currentStep === 5 ? handleSubmit : handleNext}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity hover:opacity-90"
+                disabled={isSubmitting}
+                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity 
+                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
                 style={{ background: 'linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)' }}
               >
-                {currentStep === 5 ? "Submit Complaint" : "Continue"}
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                {currentStep === 5 
+                  ? (isSubmitting ? "Submitting..." : "Submit Complaint") 
+                  : "Continue"}
+                
+                {!isSubmitting && (
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
               </button>
             </div>
           </div>

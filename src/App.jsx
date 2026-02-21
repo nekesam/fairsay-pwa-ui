@@ -31,10 +31,72 @@ function App() {
           <Route path="/" element={<LandingPage />} />
         
         {/* Authentication Routes */}
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/check-email" element={<CheckEmail />} />
+         <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/check-email" element={<CheckEmail />} />
+          
+          {/* Dashboard - Logged in users only */}
+          <Route path="/dashboard" element={
+            <ProtectedRoutes>
+              <Dashboard />
+            </ProtectedRoutes>
+          } />
+          <Route path="/home" element={<Navigate to="/dashboard" replace />} />
+
+          {/* Onboarding & Verification */}
+          <Route path="/complete-profile" element={
+            <ProtectedRoutes>
+              <CompleteProfile />
+            </ProtectedRoutes>
+          } />
+          <Route path="/employee-verification" element={
+            <ProtectedRoutes>
+              <EmployeeVerification />
+            </ProtectedRoutes>
+          } />
+          <Route path="/account-success" element={
+            <ProtectedRoutes>
+              <AccountSuccess />
+            </ProtectedRoutes>
+          } />
+
+          {/* Complaint Management - Requires Profile Verification */}
+          <Route path="/my-complaints" element={
+            <ProtectedRoutes step={APP_STEPS.PROFILE_COMPLETION}>
+              <MyComplaints />
+            </ProtectedRoutes>
+          } />
+
+          {/* Filing & Education - Requires Education Completion */}
+          <Route path="/file-complaint" element={
+            <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ComplaintForm />
+            </ProtectedRoutes>
+          } />
+          <Route path="/complaint-success" element={
+            <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ComplaintSuccess />
+            </ProtectedRoutes>
+          } />
+
+          {/* Learning Hub */}
+         <Route path="/learning" element={<ProtectedRoutes><EducationHub /></ProtectedRoutes>} />
+          <Route path="/learning/lesson/:courseId/:lessonId" element={<ProtectedRoutes><Lesson /></ProtectedRoutes>} />
+          <Route path="/learning/quiz/:courseId" element={<ProtectedRoutes><Quiz /></ProtectedRoutes>} />
+          
+          {/* AI RAG */}
+          <Route path="/ai-assistant" element={
+            <ProtectedRoutes>
+              <AIAssistant />
+            </ProtectedRoutes>
+          } />
+          {/*Whistleblowing Route*/}
+          <Route path="/whistleblowing" element={
+            <ProtectedRoutes>
+              <Whistleblowing />
+            </ProtectedRoutes>
+          } />
         
         {/* Onboarding Routes */}
         <Route path="/complete-profile" element={<CompleteProfile />} />
@@ -64,6 +126,7 @@ function App() {
         {/* Catch all - redirect to landing page */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Alert />
     </BrowserRouter>
     </AppProvider>
   );

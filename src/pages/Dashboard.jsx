@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { APP_NAME, REQUIRED_MODULES, APP_STEPS } from "../utils/constants";
 import { useAppContext } from "../context/AppContext";
-import { logActivity } from "../services/storageServices";
+import api from '../services/api';
 import book from '../images/Book.svg';
 import report from '../images/Report.svg';
 import whitecheckmark from '../images/Whitecheckmark.svg';
@@ -12,61 +12,75 @@ import chatbubble from '../images/Chatbubble.svg';
 import ribbon from '../images/Ribbon.svg';
 import { getInitials, getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/logic-helpers";
 
-export default function Dashboard() {
-
-const { user, updateUser, logout } = useAppContext();
-const navigate = useNavigate();
-const [activities, setActivities] = useState([]);
 
 
-//To sync activities with localStorage
-useEffect(() => {
-  if (user?.id) {
-    try {
-      const storedLogs = localStorage.getItem('fs_logs');
-      const allLogs = storedLogs ? JSON.parse(storedLogs) : [];
-      
-     
-      if (Array.isArray(allLogs)) {
-        const userLogs = allLogs
-          .filter(log => log && log.userId === user.id)
-          .reverse() 
-          .slice(0, 5);
-        setActivities(userLogs);
+ export default function Dashboard() {
+  const { user, logout } = useAppContext();
+  const navigate = useNavigate();
+  const [activities, setActivities] = useState([]);
+  const [complaintStats, setComplaintStats] = useState({ active: 0, resolved: 0});
+
+  //To sync activities with localStorage
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        const storedLogs = localStorage.getItem('fs_logs');
+        const allLogs = storedLogs ? JSON.parse(storedLogs) : [];
+        
+        if (Array.isArray(allLogs)) {
+          const userLogs = allLogs
+            .filter(log => log && log.userId === user.id)
+            .reverse() 
+            .slice(0, 5);
+          setActivities(userLogs);
+        }
+      } catch (error) {
+        console.error("Failed to parse logs:", error);
+        setActivities([]); 
       }
-    } catch (error) {
-      console.error("Failed to parse logs:", error);
-      setActivities([]); 
     }
+  }, [user]);
+
+  //To fetch complaints 
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        const res = await api.get('/complaints');
+        if (res.data.success) {
+          const allComplaints = res.data.complaints;
+          const activeCount = allComplaints.filter(c => c.status === 'pending' || c.status === 'in_progress').length;
+          const resolvedCount = allComplaints.filter(c => c.status === 'resolved').length;
+          
+          setComplaintStats({ active: activeCount, resolved: resolvedCount });
+        }
+      } catch (error) {
+        console.error("Failed to fetch complaints:", error);
+      }
+    };
+
+    if (user) {
+      fetchComplaints();
+    }
+  }, [user]);
+
+  
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F766E]"></div>
+      </div>
+    );
   }
-}, [user]);
 
-if (!user) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F766E]"></div>
-    </div>
-  );
-}
-
-
-//To handle user logout, clearing session and redirecting to sign-in page.
-const handleLogout = () => {
-  logout();
-  navigate('/sign-in');
-};
-
-// Function to update job title from Quick Links or Profile
-  const handleUpdateTitle = () => {
-    const newTitle = prompt("Enter your Job Title:", user.jobTitle || "");
-    if (newTitle !== null && newTitle.trim() !== "") {
-      updateUser({ jobTitle: newTitle });
-      logActivity(user.id, "Profile Updated", `Position set to: ${newTitle}`);
-    }
+  //To handle user logout, clearing session and redirecting to sign-in page.
+  const handleLogout = () => {
+    logout();
+    navigate('/sign-in');
   };
 
+
   const progressPercent = calculateProgress(user, REQUIRED_MODULES.length) || 0;
-const completedCount = user.completedModules?.length || 0;
+  const completedCount = user.completedModules?.length || 0;
 
 
   return (
@@ -113,7 +127,7 @@ const completedCount = user.completedModules?.length || 0;
               </div>
               <div className="hidden md:block">
                 <div className="font-semibold text-[24px] font-inter text-[#333]">{user.firstName} {user.lastName}</div>
-                <div onClick={handleUpdateTitle} className="text-[14px] text-[#9CA3AF] cursor-pointer hover:text-[#1E3A8A]">{user.jobTitle || 'Add Job Title'}</div>
+                <div className="text-[14px] text-[#9CA3AF] cursor-pointer hover:text-[#1E3A8A]">{user.job_title || 'Add Job Title'}</div>
               </div>
             </div>
 
@@ -203,8 +217,8 @@ const completedCount = user.completedModules?.length || 0;
         {/* Top Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 px-2">
           <TopStat icon={book} label="Education Progress" value={`${progressPercent}%`} detail={`${completedCount} of ${REQUIRED_MODULES.length} modules`} trend="+20%" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
-          <TopStat icon={report} label="Active Complaints" value="2" detail="1 under review" badge="Update" corner="bg-[#1E3A8A]/20" iconBg="bg-[#1E3A8A]" />
-          <TopStat icon={whitecheckmark} label="Resolved Cases" value="1" detail="This month" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
+          <TopStat icon={report} label="Active Complaints" value={complaintStats.active.toString()} detail="1 under review" badge="Update" corner="bg-[#1E3A8A]/20" iconBg="bg-[#1E3A8A]" />
+          <TopStat icon={whitecheckmark} label="Resolved Cases" value={complaintStats.resolved.toString()} detail="This month" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
           <TopStat icon={chatbubble} label="AI Consultations" value="8" detail="Total sessions" corner="bg-[#B91C1C]/20" iconBg="bg-[#1E3A8A]" />
         </div>
 
@@ -214,9 +228,9 @@ const completedCount = user.completedModules?.length || 0;
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <ActionCard 
                 icon={book}
-                title="Continue Learning" desc="Resume your rights education modules" btnText="Go to Education hub" color="bg-[#0D7A6F]" />
-                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked />
-                <ActionCard icon={chatbubble} title="Ask AI Assistant" desc="Get instant guidance on your rights" btnText="Start Chat" color="bg-[#2D4495]" />
+                title="Continue Learning" desc="Resume your rights education modules" btnText="Go to Education hub" color="bg-[#0D7A6F]" onClick={() => navigate('/learning')} />
+                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={!user.educated} onClick={() => navigate('/file-complaint')} />
+                <ActionCard icon={chatbubble} title="Ask AI Assistant" desc="Get instant guidance on your rights" btnText="Start Chat" color="bg-[#2D4495]"  onClick={() => navigate('/ai-assistant')} />
               </div>
             </section>
 
@@ -249,12 +263,11 @@ const completedCount = user.completedModules?.length || 0;
 
 {/*Complaints quick link*/}
                   <LinkItem 
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/my-complaints')}
                   icon={<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 16.5C4.10218 16.5 3.72064 16.342 3.43934 16.0607C3.15804 15.7794 3 15.3978 3 15V3C3 2.60218 3.15804 2.22064 3.43934 1.93934C3.72064 1.65804 4.10218 1.5 4.5 1.5H10.5L15 6V15C15 15.3978 14.842 15.7794 14.5607 16.0607C14.2794 16.342 13.8978 16.5 13.5 16.5H4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="My Complaints" />
-                  <LinkItem icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.37468 8.23029C1.31912 8.08061 1.31912 7.91596 1.37468 7.76629C1.91581 6.45419 2.83435 5.33231 4.01386 4.54289C5.19336 3.75346 6.58071 3.33203 8.00001 3.33203C9.41932 3.33203 10.8067 3.75346 11.9862 4.54289C13.1657 5.33231 14.0842 6.45419 14.6253 7.76629C14.6809 7.91596 14.6809 8.08061 14.6253 8.23029C14.0842 9.54238 13.1657 10.6643 11.9862 11.4537C10.8067 12.2431 9.41932 12.6645 8.00001 12.6645C6.58071 12.6645 5.19336 12.2431 4.01386 11.4537C2.83435 10.6643 1.91581 9.54238 1.37468 8.23029Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>} label="Anonymous Report" />
+                  <LinkItem icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.37468 8.23029C1.31912 8.08061 1.31912 7.91596 1.37468 7.76629C1.91581 6.45419 2.83435 5.33231 4.01386 4.54289C5.19336 3.75346 6.58071 3.33203 8.00001 3.33203C9.41932 3.33203 10.8067 3.75346 11.9862 4.54289C13.1657 5.33231 14.0842 6.45419 14.6253 7.76629C14.6809 7.91596 14.6809 8.08061 14.6253 8.23029C14.0842 9.54238 13.1657 10.6643 11.9862 11.4537C10.8067 12.2431 9.41932 12.6645 8.00001 12.6645C6.58071 12.6645 5.19336 12.2431 4.01386 11.4537C2.83435 10.6643 1.91581 9.54238 1.37468 8.23029Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>} label="Anonymous Report" onClick={() => navigate('/whistleblowing')} />
                   <LinkItem icon={<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 16.5C4.10218 16.5 3.72064 16.342 3.43934 16.0607C3.15804 15.7794 3 15.3978 3 15V3C3 2.60218 3.15804 2.22064 3.43934 1.93934C3.72064 1.65804 4.10218 1.5 4.5 1.5H10.5L15 6V15C15 15.3978 14.842 15.7794 14.5607 16.0607C14.2794 16.342 13.8978 16.5 13.5 16.5H4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="Documents" />
                   <LinkItem 
-                  onClick={handleUpdateTitle}
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M21.3327 28V25.3333C21.3327 23.9188 20.7708 22.5623 19.7706 21.5621C18.7704 20.5619 17.4138 20 15.9993 20H7.99935C6.58486 20 5.22831 20.5619 4.22811 21.5621C3.22792 22.5623 2.66602 23.9188 2.66602 25.3333V28" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.334 4.17188C22.4777 4.46837 23.4905 5.13623 24.2136 6.07063C24.9366 7.00502 25.3289 8.15306 25.3289 9.33454C25.3289 10.516 24.9366 11.6641 24.2136 12.5985C23.4905 13.5329 22.4777 14.2007 21.334 14.4972" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M29.334 27.9985V25.3319C29.3331 24.1502 28.9398 23.0022 28.2158 22.0683C27.4918 21.1344 26.4782 20.4673 25.334 20.1719" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.9993 14.6667C14.9449 14.6667 17.3327 12.2789 17.3327 9.33333C17.3327 6.38781 14.9449 4 11.9993 4C9.05383 4 6.66602 6.38781 6.66602 9.33333C6.66602 12.2789 9.05383 14.6667 11.9993 14.6667Z" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>} label="Profile Settings" />
                </div>
             </div>

@@ -1,10 +1,11 @@
+import api from '../services/api';
 import Logo from "../components/Logo";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { APP_NAME } from "../utils/constants";
 import { useAppContext } from "../context/AppContext";
 import { Alert } from "../components/Alert";
-import { storageService } from "../services/storageServices";
+
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -21,43 +22,37 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert({ show: false, message: "", type: "error" });
     // Here you would handle account creation
     if (formData.password !== formData.confirmPassword) {
-      setAlert({ show: true, message: "Passwords do not match", type: "error" });
+      showAlert("Passwords do not match", "error" );
       return;
     }
     try {
-      const newUser = {
+      const payload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        password: formData.password,
-        isWhistleblower: false,
-        emailVerified: false,
-        isVerified: false,
-        hasCompletedEducation: false,
-        createdAt: new Date().toISOString(),
+        password: formData.password
       }
-      const createdUser = storageService.createUser(newUser);
-      setAlert({ show: true, message: "Account created successfully! Redirecting...", type: "success" });
+    const res = await api.post('/auth/register', payload);
+    setAlert({ show: true, message: res.data.message, type: "success"});
 
-      setTimeout(() => {
-        setUser(createdUser);
-        navigate("/complete-profile");
-      }, 2000);
-    } catch (err) {
-      setAlert({ show: true, message: err.message, type: "error" });
-    }
-  };
+    setTimeout(() => {
+      navigate("/check-email")
+    }, 3000);
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || "Registration failed. Please try again";
+    setAlert({ show: true, message: errorMsg, type: "error"});
+  }
+};
 
 
   //Added - a developer bypass for testing purposes
   const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
   const handleDeveloperBypass = () => {
-  // 1. Create a "Perfect" User Object
   if (!isDevelopment) return; // Hide button in production
   const devUser = {
     id: 'dev-' + Date.now(),
@@ -65,18 +60,14 @@ export default function SignUp() {
     lastName: "Mode",
     email: "dev@fairsay.test",
     isWhistleblower: false,
-    emailVerified: true,       // Bypasses "Check your email" screens
-    isVerified: true,            // Bypasses "Verification pending" screens
-    hasCompletedEducation: true, // Bypasses the training requirements
+    emailVerified: true,       
+    isVerified: true,           
+    hasCompletedEducation: true, 
     createdAt: new Date().toISOString(),
   };
 
-  // 2. Force save to Storage & Context
-  storageService.createUser(devUser); // Saves to localStorage
-  storageService.setCurrentUser(devUser); // Sets as active session
-  setUser(devUser); // Updates App State
-
-  // 3. Go straight to the finish line
+  localStorage.setItem('fs_user', JSON.stringify(devUser));
+  setUser(devUser);
   navigate("/dashboard");
 };
 
@@ -105,10 +96,6 @@ export default function SignUp() {
             </p>
           </div>
 
-{/*For the alert*/}
-          <div className="w-full rounded-2xl bg-white ...">
-       <div className="mb-7 text-center">
-       </div>
 
        {/*For rendering the alert*/}
        {alert.show && (
@@ -470,7 +457,6 @@ export default function SignUp() {
             </div>
           </form>
         </div>
-      </div>
 
         {/* Back to Home */}
         <Link
@@ -502,6 +488,7 @@ export default function SignUp() {
           Back to Home
         </Link>
       </div>
+      
       {/* DEVELOPER BYPASS BUTTON */}
       {isDevelopment && (
         <div className="fixed bottom-4 right-4 z-[100]">

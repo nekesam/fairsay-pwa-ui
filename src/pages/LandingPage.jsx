@@ -47,8 +47,9 @@ const Header = () => {
 const Hero = () => {
   const navigate = useNavigate();
   return (
-    <section className="relative min-h-[80vh] flex items-center bg-slate-900 pt-20 pb-5">
+    <section className="relative min-h-[90vh] flex items-center bg-slate-900 pt-20 pb-5">
         <div style={{ backgroundImage: `url(${Heroimage})` }} className="w-full h-full bg-cover bg-center bg-no-repeat absolute inset-0 z-0 blur-[5px]" />
+        
       <div className="container ml-[32px] relative z-10 grid lg:grid-cols-2 gap-12 w-[1516px] px-6">
         <div className="text-white">
           <h1 className="text-[60px] md:text-7xl font-bold leading-tight mb-5 font-poppins">

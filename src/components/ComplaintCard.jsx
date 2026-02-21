@@ -15,7 +15,7 @@ function ComplaintProgressCard({ complaint }) {
       <div className="flex justify-between items-start mb-4">
         <div>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Case ID</span>
-          <h4 className="font-bold text-slate-800">{complaint.id}</h4>
+          <h4 className="font-bold text-slate-800">{complaint.tracking_id}</h4>
         </div>
         <div 
           className="px-3 py-1 rounded-full text-[10px] font-bold text-white"

@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
 
-const COMPLAINT_ID = "CPL-2024-215890";
 
 const NEXT_STEPS = [
   {
@@ -32,6 +31,10 @@ const REMINDERS = [
 ];
 
 export default function ComplaintSuccess() {
+
+  const location = useLocation();
+  const complainId = location.state?.trackingId || "ID not found";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       {/* Header */}
@@ -92,7 +95,7 @@ export default function ComplaintSuccess() {
                 className="text-[22px] sm:text-[27px] font-bold text-[#1E3A8A] tracking-widest"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
-                {COMPLAINT_ID}
+                {complainId}
               </span>
             </div>
             <p className="text-center text-[11px] text-gray-500">

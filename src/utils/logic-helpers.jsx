@@ -1,7 +1,9 @@
+import api from '../services/api';
 import book from '../images/Book.svg';
 import report from '../images/Report.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import danger from '../images/Danger.svg';
+
 
 //For logic such as validating escalation eligibility, calculating days remaining for escalation, and mapping complaint status to progress percentage for the progress bar.
 
@@ -34,37 +36,25 @@ export const validateEscalation = (dateString, hasProof) => {
 
 export const getStatusProgress = (status) => {
   const config = {
-    'Submitted': { color: '#64748B', percent: 20 },      // Slate
-    'Under Review': { color: '#1e3a8a', percent: 40 },   //Blue
-    'Escalated to PCC': { color: '#7a20e9', percent: 60 }, // Indigo
-    'Investigation': { color: '#ea1f33', percent: 80 }, //Red
-    'Resolved': { color: '#0f6b52', percent: 100 }  //Green
+    'pending': { color: '#1e3a8a', percent: 20, label: 'Under Review' },   //Blue
+    'in_progress': { color: '#ea1f33', percent: 60, label: 'Investigation' }, //Red
+    'resolved': { color: '#0f6b52', percent: 100, label: 'Resolved' }  //Green
   };
-  return config[status] || { color: '#CBD5E1', percent: 0 };
+  return config[status] || { color: '#CBD5E1', percent: 0, label: status };
 };
 
-
-//Added - function to generate anonymous IDs for users who choose to submit complaints anonymously. This helps maintain user privacy while still allowing them to track their complaints if they choose to do so. (note: ai suggested)
-export const generateAnonymousID = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing chars like O/0/I/1
-  let result = 'FS-';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result; //Example: FS-K7R2PW
-};
 
 //Added - function to extract user initials for display in the UI, such as in the user avatar. This provides a simple way to personalize the user experience while maintaining a clean and consistent design.
 export const getInitials = (user) => {
   if (!user) return "";
-  const first = user.firstName?.[0] || "";
-  const last = user.lastName?.[0] || "";
+  const first = (user.firstName)?.[0] || "";
+  const last = (user.lastName)?.[0] || "";
   return (first + last).toUpperCase();
 };
 
 //Added- function to map recent activity types to corresponding icons, simulating a visual representation of user actions in the activity feed. This enhances the user experience by providing intuitive visual cues for different types of activities within the app.
 export const getActivityIcon = (action = "") => {
-  if (action.includes("Complaint")) return <img src={report} alt="Report" className="w-5 h-5" />;
+  if (action.includes("Complaint") || action.includes("Report")) return <img src={report} alt="Report" className="w-5 h-5" />;
   if (action.includes("Module") || action.includes('Lesson')) return <img src={book} alt="Education" className="w-5 h-5" />;
   if (action.includes('Verification')) return <img src={danger} alt="Warning" className="w-5 h-5" />;
   if (action.includes('AI Consultation')) return <img src={chatbubble} alt="Chat" className="w-5 h-5" />;
@@ -86,4 +76,80 @@ if (!user?.completedModules) return 0;
 
 export const isModuleCompleted = (user, moduleId) => {
   return user?.completedModules?.includes(moduleId) ? 100 : 0;
+};
+
+
+ //Added - function to update lesson progress, simulating user interaction with the educational content. This allows the app to track which lessons have been completed and unlock subsequent modules accordingly.
+
+export const updateLessonProgress = (userId, moduleId, lessonId) => {
+  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
+  const index = users.findIndex(u => u.id === userId);
+
+  if (index !== -1) {
+    if (!users[index].progress) users[index].progress = {};
+    if (!users[index].progress[moduleId]) users[index].progress[moduleId] = [];
+
+    if (!users[index].progress[moduleId].includes(lessonId)) {
+      users[index].progress[moduleId].push(lessonId);
+    }
+    
+    localStorage.setItem('fs_users', JSON.stringify(users));
+    return users[index];
+  }
+};
+
+
+export const completeModuleQuiz = (userId, moduleId, score) => {
+  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
+  const index = users.findIndex(u => u.id === userId);
+
+  //The requirement: 80% to pass
+  if (index !== -1 && score >= 80) {
+    if (!users[index].completedModules) users[index].completedModules = [];
+    if (!users[index].completedModules.includes(moduleId)) {
+      users[index].completedModules.push(moduleId);
+    }
+
+   
+
+
+
+    
+    //Checks if all required modules from the Hub are done
+    const required = ['harassment', 'discrimination', 'wage-hour', 'retaliation', 'procedures'];
+    users[index].hasCompletedEducation = required.every(m => 
+      users[index].completedModules.includes(m)
+    );
+    
+    localStorage.setItem('fs_users', JSON.stringify(users));
+    return users[index];
+  }
+};
+
+//Added - function to retrieve complaints, simulating fetching data from a backend. This allows the app to display existing complaints and their statuses.
+
+export const submitComplaint = async (data) => {
+  try {
+    const payload = {
+      complaint_type: data.type,
+      title: data.title, 
+      description: data.description,
+      is_anonymous: data.isAnonymous || false
+    };
+    const res = await api.post('/complaints', payload);
+    return { success: true, trackingId: res.data.tracking_id };
+  } catch (err) {
+    console.error("Failed to submit complaint", err);
+    return { success: false, message: err.response?.data?.message || "Submission failed" };
+  }
+}
+
+
+//Added - dashboard activity logs, simulating a feature that allows users to see a history of their interactions with the app, such as submitted complaints and completed educational modules. This enhances user engagement and provides a sense of progress within the app.
+
+export const logActivity = (userId, action, details) => {
+  const logs = JSON.parse(localStorage.getItem('fs_logs') || '[]');
+  const newLog = { userId, action, details, timestamp: new Date().toISOString() };
+  
+  localStorage.setItem('fs_logs', JSON.stringify([newLog, ...logs].slice(0, 10)));
 };

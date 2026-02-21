@@ -1,101 +1,98 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import api from "../services/api";
+import { COMPLAINT_STATUS, COMPLAINT_STATUS_STYLES, COMPLAINT_STAT_CARDS, PRIORITY_LIST } from "../utils/constants";
 import Logo from "../components/Logo";
 
-const complaints = [
-  {
-    id: "CPL-2024-001234",
-    title: "Unpaid Overtime Hours",
-    status: "Under Review",
-    priority: "High Priority",
-    description: "Worked 15 hours of overtime in January that were not compensated...",
-    filed: "2024-02-10",
-    updated: "2024-02-12",
-    category: "Wage & Hour Violation",
-    assignedTo: "HR Department",
-    statusColor: "bg-orange-100 text-orange-700",
-    priorityColor: "border border-orange-400 text-orange-600",
-    categoryColor: "bg-blue-100 text-blue-700",
-    borderColor: "border-l-orange-400",
-  },
-  {
-    id: "CPL-2024-001189",
-    title: "Workplace Harassment",
-    status: "Investigation",
-    priority: "Critical Priority",
-    description: "Repeated inappropriate comments from supervisor...",
-    filed: "2024-02-05",
-    updated: "2024-02-11",
-    category: "Harassment",
-    assignedTo: "Legal Team",
-    statusColor: "bg-red-100 text-red-700",
-    priorityColor: "border border-red-500 text-red-600",
-    categoryColor: "bg-purple-100 text-purple-700",
-    borderColor: "border-l-red-500",
-  },
-  {
-    id: "CPL-2024-001156",
-    title: "Discriminatory Hiring Practice",
-    status: "Resolved",
-    priority: "Medium Priority",
-    description: "Noticed pattern in hiring decisions based on age...",
-    filed: "2024-01-28",
-    updated: "2024-02-08",
-    category: "Discrimination",
-    assignedTo: "HR Department",
-    statusColor: "bg-green-100 text-green-700",
-    priorityColor: "border border-yellow-500 text-yellow-700",
-    categoryColor: "bg-orange-100 text-orange-700",
-    borderColor: "border-l-green-500",
-  },
-];
-
-const stats = [
-  { 
-    label: "Total Complaints", 
-    value: "3", 
-    iconBg: "bg-[#1E3A8A]",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M14 2V8H20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    )
-  },
-  { 
-    label: "Under Review", 
-    value: "2", 
-    iconBg: "bg-[#1E3A8A]",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M12 6V12L16 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    )
-  },
-  { 
-    label: "Resolved", 
-    value: "1", 
-    iconBg: "bg-[#1E3A8A]",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M22 4L12 14.01L9 11.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    )
-  },
-  { 
-    label: "Avg. Response Time", 
-    value: "3 days", 
-    iconBg: "bg-[#1E3A8A]",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22 12H18L15 21L9 3L6 12H2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    )
-  },
-];
 
 export default function MyComplaints() {
+
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+
+  //To sync backend status to the colours
+  const getStatusStyles = (status) => {
+  return COMPLAINT_STATUS_STYLES[status] || COMPLAINT_STATUS_STYLES['pending'];
+  };
+
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        const res = await api.get('/complaints');
+        if (res.data.success) {
+         
+          const formattedComplaints = res.data.complaints.map(c => {
+            const styles = getStatusStyles(c.status);
+            return {
+              id: c.tracking_id, 
+              title: c.title,
+              description: c.description.substring(0, 100) + "...", 
+              status: styles.label,
+              statusColor: styles.color,
+              borderColor: styles.border,
+              category: c.complaint_type || "General",
+              categoryColor: "bg-gray-100 text-gray-700",
+              
+              //For fields the backend doesn't have yet:
+              priority: "Standard Priority",
+              priorityColor: "border border-gray-300 text-gray-600",
+              assignedTo: "Review Team",
+              filed: c.created_at ? new Date(c.created_at).toLocaleDateString() : "Just now",
+              updated: c.updated_at ? new Date(c.updated_at).toLocaleDateString() : "Just now",
+            };
+          });
+          setComplaints(formattedComplaints);
+        }
+      } catch (err) {
+        console.error("Failed to fetch complaints", err);
+        setError("Failed to load your complaints. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComplaints();
+  }, []);
+
+  //For the filter logic 
+  const filteredComplaints = useMemo(() => {
+    return complaints.filter((c) => {
+      //To check search query against title, description, and id
+      const matchesSearch = 
+        searchQuery === "" || 
+        c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+      //To check dropdowns
+      const matchesStatus = statusFilter === "" || c.status === statusFilter;
+      const matchesPriority = priorityFilter === "" || c.priority === priorityFilter;
+
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [complaints, searchQuery, statusFilter, priorityFilter]);
+
+  //To calculate dynamic stats for the top cards
+ const statValues = {
+  total: complaints.length,
+  review: complaints.filter(c => c.status === "Under Review").length,
+  resolved: complaints.filter(c => c.status === "Resolved").length,
+  avgTime: "24h"
+ };
+
+ if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F766E]"></div>
+      </div>
+    );
+  }
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       {/* Header */}
@@ -128,16 +125,22 @@ export default function MyComplaints() {
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-5">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          {COMPLAINT_STAT_CARDS.map((stat) => (
+            <div key={stat.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <div className={`w-9 h-9 rounded-lg ${stat.iconBg} flex items-center justify-center mb-2.5`}>
                 {stat.icon}
               </div>
-              <div className="text-[22px] font-bold text-gray-900 mb-1">{stat.value}</div>
+              <div className="text-[22px] font-bold text-gray-900 mb-1">{statValues[stat.id]}</div>
               <div className="text-xs text-gray-500">{stat.label}</div>
             </div>
           ))}
         </div>
+
+        {error && (
+          <div className="mb-5 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* Search & filters */}
         <div className="flex items-center gap-2.5 mb-5 flex-wrap">
@@ -148,21 +151,32 @@ export default function MyComplaints() {
             </svg>
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search complaints..."
               className="w-full pl-9 pr-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A]"
             />
           </div>
-          <select className="px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] min-w-[108px]">
+
+          {/*Status filters*/}
+          <select value ={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}  
+          className="px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] min-w-[108px]">
             <option value="">All Status</option>
-            <option>Under Review</option>
-            <option>Investigation</option>
-            <option>Resolved</option>
+           {Object.values(COMPLAINT_STATUS).map((status) => ( <option key ={status.id} value={status.label}>
+            {status.label}
+            </option>
+          ))}
           </select>
-          <select className="px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] min-w-[108px]">
+
+          {/*Priority filter*/}
+          <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} 
+          className="px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] min-w-[108px]">
             <option value="">All Priority</option>
-            <option>High Priority</option>
-            <option>Critical Priority</option>
-            <option>Medium Priority</option>
+          {PRIORITY_LIST.map((prior) => (
+          <option key={prior.id} value={prior.label}>
+            {prior.label}
+          </option>  
+          ))}
           </select>
           <button className="flex items-center gap-1.5 px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-600 hover:bg-gray-50 transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -174,7 +188,14 @@ export default function MyComplaints() {
 
         {/* Complaints list */}
         <div className="flex flex-col gap-3.5">
-          {complaints.map((complaint) => (
+          {filteredComplaints.length === 0 && !loading && !error ? (
+             <div className="text-center py-10 bg-white rounded-xl border border-gray-100 shadow-sm text-gray-500 text-sm">
+               {complaints.length === 0 
+                  ? "You haven't filed any complaints yet." 
+                  : "No complaints found matching your current filters."}
+             </div>
+          ) : (
+            filteredComplaints.map((complaint) => (
             <div
               key={complaint.id}
               className={`bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 ${complaint.borderColor} p-4`}
@@ -229,7 +250,7 @@ export default function MyComplaints() {
                 </div>
               </div>
             </div>
-          ))}
+          )))}
         </div>
       </main>
     </div>
