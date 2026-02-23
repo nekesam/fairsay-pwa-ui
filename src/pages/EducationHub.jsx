@@ -40,16 +40,16 @@ export default function EducationHub() {
             {/* Stats */}
             <div className="flex gap-3">
               <div className="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl text-center min-w-[90px]">
-                <div className="text-2xl font-bold">{courses.length}</div>
+                <div className="text-2xl font-bold">{stats.total}</div>
                 <div className="text-xs text-blue-100 font-medium">Courses</div>
               </div>
               <div className="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl text-center min-w-[90px]">
-                <div className="text-2xl font-bold">{completedCourses}</div>
+                <div className="text-2xl font-bold">{stats.completed}</div>
                 <div className="text-xs text-blue-100 font-medium">Completed</div>
               </div>
               <div className="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl text-center min-w-[90px]">
-                <div className="text-2xl font-bold">{inProgressCourses}</div>
-                <div className="text-xs text-blue-100 font-medium">In Progress</div>
+                <div className="text-2xl font-bold">{stats.unlocked}</div>
+                <div className="text-xs text-blue-100 font-medium">Unlocked</div>
               </div>
             </div>
           </div>
@@ -162,9 +162,25 @@ function CourseCard({ course }) {
             style={{ backgroundColor: course.isUnlocked ? course.color : '#9CA3AF' }}
           >
             <CourseIcon icon={course.icon} />
+            {!isUnlocked && (
+              <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">{course.title}</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-xl font-bold text-gray-900">{course.title}</h3>
+              {isCompleted && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              )}
+            </div>
             <p className="text-sm text-gray-600 leading-relaxed">{course.description}</p>
           </div>
         </div>
@@ -284,6 +300,16 @@ function CourseIcon({ icon }) {
           <line x1="12" y1="3" x2="12" y2="21" />
           <path d="m8 9-4 6h8l-4-6z" />
           <path d="M16 15h8l-4-6z" />
+        </svg>
+      );
+    case "document":
+      return (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
         </svg>
       );
     case "heart":

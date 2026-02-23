@@ -11,7 +11,21 @@ export default function Lesson() {
   const { user, logout } = useAppContext();
   
   const currentId = parseInt(lessonId || "1");
-  const lesson = wageHourLessons.find((l) => l.id === currentId);
+  
+  const courseId_ = courseId || "workplace-harassment";
+  
+  // Check if course is unlocked
+  useEffect(() => {
+    if (!isCourseUnlocked(courseId_)) {
+      // Redirect to education hub if trying to access locked course
+      navigate("/learning");
+    }
+  }, [courseId_, navigate]);
+  
+  const course = courseData[courseId_];
+  const lessons = course?.lessons || workplaceHarassmentLessons;
+  const courseTitle = course?.title || "Course";
+  const lesson = lessons.find((l) => l.id === currentId);
 
   // Track completed lessons dynamically for this specific course
   const [completedLessons, setCompletedLessons] = useState([]);
@@ -86,7 +100,7 @@ export default function Lesson() {
     if (currentId < wageHourLessons.length) {
       navigate(`/learning/lesson/${courseId}/${currentId + 1}`);
     } else {
-      navigate(`/learning/quiz/${courseId}`);
+      navigate(`/learning/quiz/${courseId_}`);
     }
   };
 

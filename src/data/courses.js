@@ -58,6 +58,7 @@ export const courses = [
     icon: "heart",
     color: "#6D28D9", 
     progress: 0,
+    order: 5,
     lessons: [
       { id: 1, duration: "5 min" },
       { id: 2, duration: "4 min" },
@@ -68,7 +69,8 @@ export const courses = [
   }
 ];
 
-export const wageHourLessons = [
+// ============ WORKPLACE HARASSMENT MODULE ============
+export const workplaceHarassmentLessons = [
   {
     id: 1,
     title: "Introduction to the Labour Act",
@@ -100,7 +102,9 @@ export const wageHourLessons = [
     },
     sections: [
       {
-        heading: "Key Points:",
+        heading: "What Is Workplace Harassment?",
+        intro:
+          "Workplace harassment refers to repeated or serious unwanted behavior in a work environment that creates fear, humiliation, intimidation, or a hostile atmosphere for an employee.",
         items: [
           { label: "Current Minimum:", text: "₦70,000 per month" },
           { label: "Coverage:", text: "Establishments employing 50 or more persons" },
@@ -108,7 +112,7 @@ export const wageHourLessons = [
         ],
       },
       {
-        heading: "What to Check:",
+        heading: "Harassment becomes serious when:",
         items: [
           { label: "", text: "Does your basic salary meet the ₦70,000 threshold?" },
           { label: "", text: "Are allowances being unfairly grouped to mimic the minimum wage?" },
@@ -129,7 +133,8 @@ export const wageHourLessons = [
     },
     sections: [
       {
-        heading: "Overtime Basics:",
+        heading: "What Harassment Is Not",
+        intro: "Not every workplace disagreement is harassment. Examples that may not automatically qualify:",
         items: [
           { label: "Threshold:", text: "Any time worked beyond the agreed normal hours." },
           { label: "Rate:", text: "Must be paid at an overtime rate (often 1.5x on weekdays, 2x on public holidays) as stipulated in your contract or collective agreement." },
@@ -176,6 +181,66 @@ export const wageHourLessons = [
           { label: "", text: "Legal action can be taken at the National Industrial Court of Nigeria (NICN)." },
         ],
       },
+      {
+        heading: "Unpaid or Underpaid Overtime",
+        items: [
+          {
+            label: "",
+            text: "Working extra hours without overtime pay when your contract promises it",
+          },
+          { label: "", text: "Being forced to work late without compensation" },
+        ],
+      },
+      {
+        heading: "Unlawful Deductions",
+        intro: "Employers may only deduct wages when:",
+        items: [
+          { label: "", text: "Authorized by law (e.g., tax, pension)" },
+          { label: "", text: "Employee consents" },
+          { label: "", text: "Court order exists" },
+        ],
+      },
+    ],
+  },
+  {
+    id: 3,
+    title: "Understanding Impact & Boundaries",
+    duration: "4 min",
+    completed: false,
+    heading: "Impact and What's Not a Violation",
+    body: "When you are underpaid or not paid on time, it can lead to financial stress and inability to meet basic needs, difficulty paying rent, bills, and family expenses, reduced trust in your employer, and lower morale and productivity.",
+    learnItems: [],
+    callout: {
+      type: "warning",
+      text: "Did You Know? Employers cannot reduce wages below minimum wage due to economic hardship unless legally restructured in compliance with labour regulations.",
+    },
+    sections: [
+      {
+        heading: "What Wage Issues Are Not",
+        intro:
+          "Not all disagreements over money at work are illegal. Examples that may not automatically qualify as wage violations:",
+        items: [
+          { label: "", text: "Pay raises or reductions agreed in writing" },
+          {
+            label: "",
+            text: "Lawful statutory deductions (e.g., taxes, pension contributions)",
+          },
+          {
+            label: "",
+            text: "Contractual pay structures like commissions",
+          },
+          {
+            label: "",
+            text: "Delays explained and agreed in writing",
+          },
+        ],
+      },
+      {
+        heading: "The Key Difference:",
+        intro:
+          "The key difference lies in whether the practice is allowed under your contract and Nigerian law.",
+        items: [],
+      },
     ],
   },
 ];
@@ -196,7 +261,7 @@ export const wageHourQuiz = [
       "No, wages must be paid in legal tender",
       "Only for part-time workers",
     ],
-    correctIndex: 2,
+    correctIndex: 0,
   },
   {
     id: 3,
