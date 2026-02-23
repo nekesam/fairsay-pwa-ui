@@ -601,15 +601,7 @@ export default function ComplaintForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="max-w-[95%] mx-auto flex items-center justify-between">
-          <Logo />
-          <Link to="/my-complaints" className="flex items-center gap-1 text-[#1E3A8A] hover:opacity-80 transition-opacity text-sm">
-            ← Back to Complaints
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="max-w-[95%] mx-auto px-6 py-8">
         {/* Hero banner */}

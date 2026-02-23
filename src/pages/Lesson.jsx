@@ -11,7 +11,21 @@ export default function Lesson() {
   const { user, logout } = useAppContext();
   
   const currentId = parseInt(lessonId || "1");
-  const lesson = wageHourLessons.find((l) => l.id === currentId);
+  
+  const courseId_ = courseId || "workplace-harassment";
+  
+  // Check if course is unlocked
+  useEffect(() => {
+    if (!isCourseUnlocked(courseId_)) {
+      // Redirect to education hub if trying to access locked course
+      navigate("/learning");
+    }
+  }, [courseId_, navigate]);
+  
+  const course = courseData[courseId_];
+  const lessons = course?.lessons || workplaceHarassmentLessons;
+  const courseTitle = course?.title || "Course";
+  const lesson = lessons.find((l) => l.id === currentId);
 
   // Track completed lessons dynamically for this specific course
   const [completedLessons, setCompletedLessons] = useState([]);
@@ -50,7 +64,7 @@ export default function Lesson() {
   const isCurrentLessonCompleted = completedLessons.includes(lesson.id);
 
   const handlePrev = () => {
-    if (currentId > 1) navigate(`/learning/lesson/${courseId}/${currentId - 1}`);
+    if (currentId > 1) navigate(`/learning/lesson/${courseId_}/${currentId - 1}`);
   };
 
   const handleNext = () => {
@@ -71,7 +85,7 @@ export default function Lesson() {
     if (currentId < wageHourLessons.length) {
       navigate(`/learning/lesson/${courseId}/${currentId + 1}`);
     } else {
-      navigate(`/learning/quiz/${courseId}`);
+      navigate(`/learning/quiz/${courseId_}`);
     }
   };
 
@@ -131,7 +145,7 @@ export default function Lesson() {
           {/* Sidebar */}
           <aside className="w-full lg:w-56 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sticky top-24">
-              <h2 className="font-bold text-gray-900 text-base mb-4">Wage & Hour Rights</h2>
+              <h2 className="font-bold text-gray-900 text-base mb-4">{courseTitle}</h2>
               <nav className="space-y-2">
                 {wageHourLessons.map((l) => {
                   const isCompleted = completedLessons.includes(l.id);

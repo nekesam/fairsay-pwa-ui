@@ -20,6 +20,9 @@ import Lesson from './pages/Lesson';
 import Quiz from './pages/Quiz';
 import AIAssistant from './pages/AIAssistant';
 import Whistleblowing from './pages/Whistleblowing';
+import Profile from './pages/Profile';
+import ProfileSettings from './pages/ProfileSettings';
+import DeleteAccount from './pages/DeleteAccount';
 
 function App() {
   return (
