@@ -15,6 +15,9 @@ import Lesson from './pages/Lesson';
 import Quiz from './pages/Quiz';
 import AIAssistant from './pages/AIAssistant';
 import Whistleblowing from './pages/Whistleblowing';
+import Profile from './pages/Profile';
+import ProfileSettings from './pages/ProfileSettings';
+import DeleteAccount from './pages/DeleteAccount';
 
 function App() {
   return (
@@ -49,6 +52,11 @@ function App() {
         <Route path="/learning/quiz/:courseId" element={<Quiz />} />
         <Route path="/ai-assistant" element={<AIAssistant />} />
         <Route path="/whistleblowing" element={<Whistleblowing />} />
+        
+        {/* Profile Routes */}
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/settings" element={<ProfileSettings />} />
+        <Route path="/profile/delete-account" element={<DeleteAccount />} />
         
         {/* Catch all - redirect to sign in */}
         <Route path="*" element={<Navigate to="/sign-in" replace />} />

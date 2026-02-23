@@ -1,4 +1,4 @@
-export default function Logo() {
+export default function Logo({ scrolled = false }) {
   return (
     <div className="flex items-center gap-2 h-9">
       <svg
@@ -10,15 +10,17 @@ export default function Logo() {
       >
         <path
           d="M20 2.5L3.75 10L20 17.5L36.25 10L20 2.5Z"
-          fill="#1E3A8A"
+          fill={scrolled ? "white" : "#1E3A8A"}
         />
         <path
           d="M3.75 17.5V27.5L20 35L36.25 27.5V17.5L20 25L3.75 17.5Z"
-          fill="#0F766E"
+          fill={scrolled ? "#93C5FD" : "#0F766E"}
         />
-        <circle cx="20" cy="20" r="3" fill="white" />
+        <circle cx="20" cy="20" r="3" fill={scrolled ? "#1E3A8A" : "white"} />
       </svg>
-      <span className="font-['Poppins'] font-bold text-[27px] leading-[27px] text-[#1E3A8A]">
+      <span className={`font-['Poppins'] font-bold text-[27px] leading-[27px] transition-colors duration-700 ${
+        scrolled ? 'text-white' : 'text-[#1E3A8A]'
+      }`}>
         FairSay
       </span>
     </div>
