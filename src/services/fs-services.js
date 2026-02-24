@@ -2,29 +2,13 @@
 
 import api from '../services/api';
 
-//Waiting for api integration
-
-export const askFairSayAI = async (query) => {
-    // Simulate an API call to FairSay AI for feedback analysis
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          answer: `Regarding your question about "${query}": Under the Nigerian Labour Act, employers are required to provide a safe working environment and fair wages. If your complaint falls under these categories, you have a strong case for escalation. However, it's important to ensure that you have documented evidence of your internal reporting and the employer's response (or lack thereof) over the 14-day period. This will strengthen your case when presenting it to the PCC.`,
-          links: [
-            { label: "Nigerian Labour Act - Section on Workplace Safety", url: "https://www.lawyard.ng/laws/LFN-2004-Cap-L1.pdf" },
-            { label: "PCC Complaint Guidelines", url: "https://pcc.gov.ng/complaint-guidelines" }]
-        });
-      }, 2000);
-    });
-  };
-
-
-  /* To save time for when the api comes through
-
 export const askFairSayAI = async (query) => {
   try {
-    const res = await api.post('/ai/ask', { query });
-    return res.data; 
+    const res = await api.post('/ai/chat', { message: query });
+    return {
+      answer: res.data.reply,
+      links: []
+    }; 
   } catch (err) {
     console.error("AI service failed", err);
     return { 

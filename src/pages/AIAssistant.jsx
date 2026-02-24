@@ -1,13 +1,30 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { getInitials } from "../utils/logic-helpers";
-import { AppContext, useAppContext } from "../context/AppContext";
+import { useAppContext } from "../context/AppContext";
+import { askFairSayAI } from "../services/fs-services";
 import Logo from "../components/Logo";
 
 export default function AIAssistant() {
   const {user, logout} = useAppContext();
   const navigate= useNavigate();
+  const messagesEndRef = useRef();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: "Welcome to FairSay",
+      desc: "Complete your profile to get the most out of our AI Assistant.",
+      time: "Just now",
+      unread: true,
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+    setShowNotifications(false);
+  };
   const [messages, setMessages] = useState([
     {
       type: "assistant",
@@ -43,24 +60,43 @@ export default function AIAssistant() {
     },
   ];
 
-  const handleSendMessage = (text) => {
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]); 
+
+  const handleSendMessage = async (text) => {
     if (!text.trim()) return;
 
     setMessages((prev) => [...prev, { type: "user", text }]);
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+   try {
+      //To call the backend AI service
+      const aiResponse = await askFairSayAI(text);
+
       setMessages((prev) => [
         ...prev,
         {
           type: "assistant",
-          text: "Based on your question, here's what you need to know: This is a simulated response. In production, this would connect to an AI system trained on workplace rights and labor laws. The response would provide detailed, accurate guidance specific to your situation.",
+          text: aiResponse.answer,
         },
       ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "assistant",
+          text: "I'm having trouble connecting to my knowledge base right now. Please try asking again in a moment.",
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleQuickQuestion = (question) => {
@@ -98,18 +134,103 @@ export default function AIAssistant() {
               </svg>
             </Link>
 
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+ <div className="flex items-center gap-4">
+                  {/* Notification */}
+                  <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z"
+                        stroke="#4A5565"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
+                        stroke="#4A5565"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                
+      {unreadCount > 0 && (
+        <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+        </span>
+      )}
+                  </button>
+
+                                   {showNotifications && (
+        <div className="
+          /* Position & Vertical Gap */
+          absolute top-[75px] z-[100] right-[10px] md:right-20  max-w-[60vw] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden 
+        animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-200 ease-out
+        ">
+          {/* Header Section */}
+          <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50 gap-5">
+            <h4 className="font-bold text-gray-800 font-poppins">Notifications</h4>
+            <button 
+              onClick={markAllAsRead} 
+              className="text-xs text-[#1E3A8A] font-bold hover:text-[#0F766E] transition-colors"
+            >
+              Mark all as read
             </button>
+          </div>
+      
+          {/* List Section */}
+          <div className="max-h-[400px] overflow-y-auto scrollbar-hide">
+            {notifications.length > 0 ? (
+              notifications.map(n => (
+                <div 
+                  key={n.id} 
+                  className={`
+                    p-4 border-b border-gray-50 flex gap-3 transition-all cursor-pointer
+                    hover:bg-gray-50 active:bg-gray-100
+                    ${n.unread ? 'bg-blue-50/30' : 'bg-white'}
+                  `}
+                >
+                  {/* Status Indicator */}
+                  <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${n.unread ? 'bg-[#1E3A8A]' : 'bg-transparent'}`} />
+                  
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start gap-2">
+                      <h5 className={`text-sm font-inter ${n.unread ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
+                        {n.title}
+                      </h5>
+                      <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{n.time}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed font-inter">
+                      {n.desc}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-12 text-center text-gray-400 text-sm font-inter">
+                No notifications yet
+              </div>
+                )}
+          </div>
+          
+      
+        </div>
+      )}
+
+
+
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">{getInitials(user)}</div>
+              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">{user ? getInitials(user): "U"}</div>
               <div className="hidden md:block">
-                <div className="font-semibold text-sm text-[#333]">{user.firstName}{user.lastName}</div>
-                <div className="text-xs text-[#9CA3AF]">{user.job_title || 'Add Job Title'}</div>
+                <div className="font-semibold text-sm text-[#333]">{user?.firstName}{user?.lastName}</div>
+                <div className="text-xs text-[#9CA3AF]">{user?.job_title || 'Add Job Title'}</div>
               </div>
             </div>
 
@@ -121,6 +242,7 @@ export default function AIAssistant() {
               </svg>
             </button>
           </div>
+        </div>
         </div>
       </header>
 
@@ -145,19 +267,19 @@ export default function AIAssistant() {
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col" style={{ height: "calc(100vh - 280px)", minHeight: "500px" }}>
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {messages.map((message, idx) => (
+              {messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
                     className={`max-w-[85%] rounded-2xl px-5 py-4 ${
-                      message.type === "user"
+                      msg.type === "user"
                         ? "bg-[#1E3A8A] text-white"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {message.type === "assistant" && (
+                    {msg.type === "assistant" && (
                       <div className="flex items-center gap-2 mb-2">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -166,7 +288,7 @@ export default function AIAssistant() {
                         <span className="text-xs font-semibold text-gray-600">AI Assistant</span>
                       </div>
                     )}
-                    <p className="text-sm leading-relaxed">{message.text}</p>
+                    <p className="text-sm leading-relaxed">{msg.text}</p>
                   </div>
                 </div>
               ))}
@@ -208,12 +330,13 @@ export default function AIAssistant() {
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage(inputValue)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage(inputValue)}
                   placeholder="Ask about your workplace rights..."
                   className="flex-1 px-5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent text-sm"
                 />
                 <button
                   onClick={() => handleSendMessage(inputValue)}
+                  disabled={!inputValue.trim() || isTyping}
                   className="px-6 py-3 bg-[#1E3A8A] text-white rounded-xl hover:bg-[#1a3278] transition-colors flex items-center gap-2 font-semibold text-sm"
                 >
                   Send

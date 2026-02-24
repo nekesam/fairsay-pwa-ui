@@ -4,8 +4,6 @@ import Logo from "../components/Logo";
 import { COMPLAINT_CATEGORIES, COMPLAINT_STEPS, IMPACT_TYPES, INITIAL_COMPLAINT_FORM_DATA } from "../utils/constants";
 import api from '../services/api'
 
-
-
 function StepIndicator({ currentStep }) {
   return (
     <div className="flex items-start gap-0 w-full">
@@ -60,8 +58,8 @@ function Step1({ data, onChange }) {
           Complaint Category <span className="text-red-500">*</span>
         </label>
         <select
-          value={data.complaintCategory}
-          onChange={(e) => onChange({ complaintCategory: e.target.value })}
+          value={data.violationCategory}
+          onChange={(e) => onChange({ violationCategory: e.target.value })}
           className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] text-gray-700"
         >
           <option value="">Select a category</option>
@@ -245,16 +243,18 @@ function Step3({ data, onChange }) {
         </div>
       </label>
 
-      <div>
-        <label className="block text-xs font-semibold text-gray-800 mb-1.5">Witness Names & Contact Information</label>
-        <textarea
-          value={data.witnessInfo}
-          onChange={(e) => onChange({ witnessInfo: e.target.value })}
-          placeholder="List witness names and how to contact them (email, phone). One per line."
-          rows={4}
-          className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] placeholder-gray-400 resize-none"
-        />
-      </div>
+      {data.hasWitnesses && (
+        <div>
+          <label className="block text-xs font-semibold text-gray-800 mb-1.5">Witness Names & Contact Information</label>
+          <textarea
+            value={data.witnessInfo}
+            onChange={(e) => onChange({ witnessInfo: e.target.value })}
+            placeholder="List witness names and how to contact them (email, phone). One per line."
+            rows={4}
+            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/20 focus:border-[#1E3A8A] placeholder-gray-400 resize-none"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -267,6 +267,19 @@ function Step4({ data, onChange }) {
     } else {
       onChange({ impactTypes: [...current, id] });
     }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      onChange({ evidenceFiles: [...data.evidenceFiles, ...newFiles] });
+    }
+  };
+
+  const removeFile = (indexToRemove) => {
+    onChange({
+      evidenceFiles: data.evidenceFiles.filter((_, index) => index !== indexToRemove)
+    });
   };
 
   return (
@@ -330,9 +343,20 @@ function Step4({ data, onChange }) {
             Drag and drop files here, or{" "}
             <span className="text-[#1E3A8A] font-semibold">browse files</span>
           </span>
-          <span className="text-[11px] text-gray-400">PDF, JPG, PNG, DOC, TXT, CSV (Max 10MB each)</span>
-          <input type="file" multiple className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt,.csv" />
+          <span className="text-[11px] text-gray-400">PDF, JPG, JPEG, PNG (Max 10MB each)</span>
+          <input type="file" multiple className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
         </label>
+
+        {data.evidenceFiles.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {data.evidenceFiles.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 border border-gray-100 rounded-md text-xs">
+                <span className="truncate max-w-[80%] text-gray-700">{file.name}</span>
+                <button type="button" onClick={() => removeFile(index)} className="text-red-500 font-semibold hover:text-red-700">Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -431,7 +455,7 @@ function Step5({ data, onChange }) {
         <h3 className="text-xs font-bold text-gray-800 mb-2.5">Complaint Summary</h3>
         <div className="space-y-1.5">
           {[
-            { label: "Category:", value: data.complaintCategory || "—" },
+            { label: "Category:", value: data.violationCategory || "—" },
             { label: "Incident Date:", value: data.dateOfIncident || "—" },
             { label: "Location:", value: data.location || "—" },
             { label: "Evidence Files:", value: data.evidenceFiles.length > 0 ? `${data.evidenceFiles.length} file(s)` : "None" },
@@ -460,66 +484,107 @@ export default function ComplaintForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(INITIAL_COMPLAINT_FORM_DATA);
   
-  //For loading and error states
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // State for tracking DB ID, Loading, and Errors
+  const [draftId, setDraftId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
   const updateFormData = (partial) => {
     setFormData((prev) => ({ ...prev, ...partial }));
   };
 
-  const handleNext = () => {
-    if (currentStep < 5) setCurrentStep((s) => s + 1);
+  const handleNext = async () => {
+    setSubmitError(null);
+    setIsProcessing(true);
+
+    try {
+      // STEP 1: DRAFT CREATION
+      if (currentStep === 1) {
+        const payload = {
+          complaint_type: formData.violationCategory,
+          title: formData.complaintTitle,
+          description: formData.detailedDescription,
+          is_anonymous: formData.keepConfidential
+        };
+        
+        if (!draftId) {
+          const res = await api.post('/complaints', payload);
+          setDraftId(res.data.complaintId);
+        }
+      } 
+      
+      // STEP 2: INCIDENT DETAILS
+      else if (currentStep === 2) {
+        const payload = {
+          dateOfIncident: formData.dateOfIncident,
+          timeOfIncident: formData.timeOfIncident,
+          location: formData.location,
+          isOngoing: formData.isOngoing
+        };
+        await api.put(`/complaints/${draftId}/step-2`, payload); 
+      } 
+      
+      // STEP 3: PARTIES INVOLVED
+      else if (currentStep === 3) {
+        const payload = {
+          parties: {
+            personsInvolved: formData.personsInvolved,
+            jobTitle: formData.jobTitle,
+            department: formData.department,
+            hasWitnesses: formData.hasWitnesses,
+            witnessInfo: formData.witnessInfo
+          }
+        };
+        await api.post(`/complaints/${draftId}/parties`, payload);
+      } 
+      
+      // STEP 4: EVIDENCE UPLOAD
+      else if (currentStep === 4) {
+        if (formData.evidenceFiles.length > 0) {
+          const filePayload = new FormData();
+          
+          formData.evidenceFiles.forEach(file => {
+            filePayload.append('files', file); 
+          });
+          filePayload.append('description', formData.evidenceDescription);
+
+          await api.post(`/complaints/${draftId}/evidence`, filePayload, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
+      }
+
+      if (currentStep < 5) setCurrentStep((s) => s + 1);
+
+    } catch (error) {
+      console.error("Step processing failed:", error);
+      setSubmitError(error.response?.data?.message || "Failed to save progress. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep((s) => s - 1);
+    setSubmitError(null);
   };
 
-  //For the submit handler
   const handleSubmit = async () => {
-    setIsSubmitting(true);
+    setIsProcessing(true);
     setSubmitError(null);
 
     try {
-      //To compile the data into a single formatted string
-      const compiledDescription = `
-        PRIMARY COMPLAINT:
-        ${formData.detailedDescription}
-
-        --- INCIDENT DETAILS ---
-        Date & Time: ${formData.dateOfIncident} at ${formData.timeOfIncident || 'Not specified'}
-        Location: ${formData.location}
-        Ongoing Issue: ${formData.isOngoing ? 'Yes' : 'No'}
-
-        --- PARTIES INVOLVED ---
-        Accused: ${formData.personsInvolved} (${formData.jobTitle}, ${formData.department})
-        Witnesses: ${formData.hasWitnesses ? formData.witnessInfo : 'None reported'}
-
-        --- IMPACT & RESOLUTION ---
-        Impact Types: ${formData.impactTypes.length > 0 ? formData.impactTypes.join(', ') : 'None specified'}
-        Evidence Available: ${formData.evidenceDescription || 'None described'}
-        Previously Reported: ${formData.hasPreviouslyReported ? `Yes, to ${formData.reportedTo} on ${formData.dateReported}. Action taken: ${formData.actionTaken}` : 'No'}
-        Desired Outcome: ${formData.desiredOutcome || 'Not specified'}
-      `;
-
-      // Map exactly the 4 keys to match the backend
-      const payload = {
-        complaint_type: formData.complaintCategory,
-        title: formData.complaintTitle,
-        description: compiledDescription,
-        is_anonymous: formData.keepConfidential
-      };
-
-      const res = await api.post('/complaints', payload);
-
+      // FINAL SUBMISSION
+      const res = await api.post(`/complaints/${draftId}/submit`);
+      
+      // Pass the tracking_id to the success screen
       navigate("/complaint-success", { state: { trackingId: res.data.tracking_id } });
 
-    } catch (err) {
-      console.error("Submission failed:", err);
-      setSubmitError(err.response?.data?.message || "Failed to submit complaint. Please try again.");
+    } catch (error) {
+      console.error("Submission failed:", error);
+      setSubmitError(error.response?.data?.message || "Failed to submit complaint. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsProcessing(false);
     }
   };
 
@@ -579,60 +644,60 @@ export default function ComplaintForm() {
                 </div>
               </div>
             </div>
-          </div>
+        </div>
 
-          {/* Step indicator */}
-          <div className="bg-white rounded-xl p-4 mb-5 shadow-sm border border-gray-100">
-            <StepIndicator currentStep={currentStep} />
-          </div>
+        {/* Step indicator */}
+        <div className="bg-white rounded-xl p-4 mb-5 shadow-sm border border-gray-100">
+          <StepIndicator currentStep={currentStep} />
+        </div>
 
-          {/* Form card */}
-          <div className="bg-white rounded-xl p-5 sm:p-7 shadow-sm border border-gray-100">
-            {renderStep()}
+        {/* Form card */}
+        <div className="bg-white rounded-xl p-5 sm:p-7 shadow-sm border border-gray-100">
+          {renderStep()}
 
-            {/* Error UI */}
-            {submitError && currentStep === 5 && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
-                <p className="font-semibold mb-0.5">Submission Error</p>
-                <p>{submitError}</p>
-              </div>
-            )}
-
-            {/* Navigation buttons */}
-            <div className="flex items-center justify-between mt-7 pt-5 border-t border-gray-100">
-              <button
-                onClick={handleBack}
-                disabled={currentStep === 1 || isSubmitting}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold border transition-all
-                  ${(currentStep === 1 || isSubmitting)
-                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
-                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                  }`}
-              >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Back
-              </button>
-              <button
-                onClick={currentStep === 5 ? handleSubmit : handleNext}
-                disabled={isSubmitting}
-                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity 
-                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
-                style={{ background: 'linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)' }}
-              >
-                {currentStep === 5 
-                  ? (isSubmitting ? "Submitting..." : "Submit Complaint") 
-                  : "Continue"}
-                
-                {!isSubmitting && (
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </button>
+          {/* Error UI */}
+          {submitError && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+              <p className="font-semibold mb-0.5">Submission Error</p>
+              <p>{submitError}</p>
             </div>
+          )}
+
+          {/* Navigation buttons */}
+          <div className="flex items-center justify-between mt-7 pt-5 border-t border-gray-100">
+            <button
+              onClick={handleBack}
+              disabled={currentStep === 1 || isProcessing}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold border transition-all
+                ${(currentStep === 1 || isProcessing)
+                  ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Back
+            </button>
+            <button
+              onClick={currentStep === 5 ? handleSubmit : handleNext}
+              disabled={isProcessing}
+              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity 
+                ${isProcessing ? 'opacity-70 cursor-wait' : 'hover:opacity-90'}`}
+              style={{ background: 'linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)' }}
+            >
+              {currentStep === 5 
+                ? (isProcessing ? "Submitting..." : "Submit Complaint") 
+                : (isProcessing ? "Processing..." : "Continue")}
+              
+              {!isProcessing && currentStep < 5 && (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
           </div>
+        </div>
       </main>
     </div>
   );

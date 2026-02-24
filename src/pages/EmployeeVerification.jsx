@@ -91,7 +91,7 @@ export default function EmployeeVerification() {
                     type="file"
                     id="file-upload"
                     onChange={handleFileChange}
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    accept=".pdf,.jpg,.jpeg,.png"
                     className="hidden"
                     required
                   />

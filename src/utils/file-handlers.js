@@ -2,7 +2,7 @@
 //Waiting for api integration
 
 export const validateFileUpload = (file) => {
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/doc', 'application/docx'];
+    const allowedTypes = ['jpg', 'png', 'jpeg', 'pdf'];
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (!allowedTypes.includes(file.type)) {
       return { valid: false, error: 'Unsupported file type' };

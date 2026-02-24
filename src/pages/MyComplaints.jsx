@@ -22,9 +22,9 @@ export default function MyComplaints() {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const res = await api.get('/complaints');
+        const res = await api.get('/complaints/my-complaints');
+
         if (res.data.success) {
-         
           const formattedComplaints = res.data.complaints.map(c => {
             const styles = getStatusStyles(c.status);
             return {
