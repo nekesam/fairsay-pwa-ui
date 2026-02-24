@@ -9,6 +9,7 @@ import book from '../images/Book.svg';
 import report from '../images/Report.svg';
 import lock from '../images/Lock.svg';
 import social from '../images/Social.svg';
+import people from '../images/People.svg';
 import analytics from '../images/Analytics.svg';
 
 //Added - the web app name
@@ -233,7 +234,7 @@ export const LANDING_FEATURES = [
     id: 'ai',
     title: "AI-Powered Guidance",
     desc: "RAG system provides personalized recommendations, answers FAQs, and suggests tailored next steps based on your situation.",
-    icon: social,
+    icon: people,
     color: "blue"
   },
   {
