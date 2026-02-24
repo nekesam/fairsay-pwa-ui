@@ -1,87 +1,10 @@
-import Logo from "../components/Logo";
+import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="max-w-[95%] mx-auto flex items-center justify-between">
-          <Logo />
-          <div className="flex items-center gap-4">
-            {/* Notification */}
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z"
-                  stroke="#4A5565"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
-                  stroke="#4A5565"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-
-            {/* User Profile */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">
-                JD
-              </div>
-              <div className="hidden md:block">
-                <div className="font-semibold text-sm text-[#333]">John Divine</div>
-                <div className="text-xs text-[#9CA3AF]">Software Engineer</div>
-              </div>
-            </div>
-
-            {/* Logout */}
-            <Link to="/sign-in" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7.5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7.5"
-                  stroke="#4A5565"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M13.3333 14.1667L17.5 10L13.3333 5.83334"
-                  stroke="#4A5565"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M17.5 10H7.5"
-                  stroke="#4A5565"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Content */}
       <main className="max-w-[95%] mx-auto px-6 py-8">
