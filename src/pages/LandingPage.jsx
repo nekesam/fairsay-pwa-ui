@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { APP_NAME } from '../utils/constants';
@@ -16,6 +16,12 @@ import { LANDING_FEATURES } from '../utils/constants';
 const Header = () => {
   const { user, loading } = useAppContext();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const toggleMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  }
+  const navLinks = ['About', 'Features', 'How It Works', 'Contacts'];
+
   return (
     <header className="fixed top-0 w-full z-50 bg-[#1e3a8a] backdrop-blur-sm border-b border-white/10">
       <div className="mx-auto px-8 h-20 flex items-center justify-between">
@@ -23,8 +29,10 @@ const Header = () => {
           <div className="w-8 h-8  rounded-lg flex items-center justify-center"><Logo /></div>
           <span className="text-2xl font-bold font-poppins w-[93px] h-[32px] leading-[32px] gap-2 text-white">{APP_NAME}</span>
         </div>
+
+        {/*Desktop Navigation*/}
         <nav className="hidden md:flex items-center gap-10 text-[14px] font-light font-inter">
-          {['About', 'Features', 'How It Works', 'Contacts'].map((item) => (
+          {navLinks.map((item) => (
             <a key={item} href={`#${item.toLowerCase().replace(/\s/g, '-')}`} className="text-gray-300 hover:text-[#2DD4BF] transition-colors">{item}</a>
           ))}
 
@@ -39,7 +47,58 @@ const Header = () => {
           </button>
             )}
         </nav>
+
+        {/* Hamburger Menu Button (Mobile Only) */}
+        <button 
+          className="md:hidden text-white p-2 focus:outline-none" 
+          onClick={toggleMenu}
+        >
+          {isMobileMenuOpen ? (
+            // Close (X) Icon
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          ) : (
+            // Hamburger Icon
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile Navigation Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-20 left-0 w-full bg-[#1e3a8a] border-b border-white/10 shadow-xl py-6 flex flex-col items-center gap-6 animate-in slide-in-from-top-2">
+          {navLinks.map((item) => (
+            <a 
+              key={item} 
+              href={`#${item.toLowerCase().replace(/\s/g, '-')}`} 
+              className="text-white hover:text-[#2DD4BF] text-lg font-inter transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)} // Close menu on click
+            >
+              {item}
+            </a>
+          ))}
+
+          {loading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#0F766E]" />
+          ) : (
+            <button 
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigate(user ? '/dashboard' : '/sign-in');
+              }}
+              className="bg-[#0F766E] hover:bg-[#134E4A] text-white px-8 py-3 rounded-md transition-all shadow-lg text-lg font-semibold w-3/4 max-w-xs"
+            >
+              {user ? 'Dashboard' : 'Sign In'}
+            </button>
+          )}
+        </div>
+        )}
     </header>
   );
 };
@@ -146,7 +205,7 @@ const Features = () => (
             className="bg-white p-8 rounded-xl border border-slate-300 shadow-lg hover:translate-y-[-5px] transition-all flex flex-col text-left h-full max-w-full group"
           >
             {/* Image Icon Container */}
-            <div className={`w-16 h-16 mb-6 flex items-center justify-center overflow-hidden ${isRed ? 'bg-red-600' : 'bg-[#1E3A8A]'} rounded-lg`}>
+            <div className={`w-16 h-16 mb-6 flex items-center stroke-slate-200 justify-center overflow-hidden ${isRed ? 'bg-red-600' : 'bg-[#1E3A8A]'} rounded-lg`}>
               <img 
                 src={feature.icon} 
                 alt={feature.title} 

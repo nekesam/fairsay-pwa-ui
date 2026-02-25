@@ -80,10 +80,10 @@ export default function SignUp() {
     >
       <div className="w-full max-w-[576px] flex flex-col items-center gap-7">
         {/* Logo */}
-       <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 text-[#1E3A8A]"><Logo /></div>
-                  <span className="text-[36px] font-bold font-poppins text-[#1E3A8A]">{APP_NAME}</span>
-                </div>
+     {/* Logo Header - Fixed! */}
+<div className="mb-2 transform scale-125 origin-center">
+  <Logo />
+</div>
 
         {/* Main Card */}
         <div className="w-full rounded-2xl bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-7">

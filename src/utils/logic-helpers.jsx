@@ -4,10 +4,10 @@ import report from '../images/Report.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import danger from '../images/Danger.svg';
 
+// ==========================================
+// ORIGINAL HELPERS
+// ==========================================
 
-//For logic such as validating escalation eligibility, calculating days remaining for escalation, and mapping complaint status to progress percentage for the progress bar.
-
-//Added - function to evaluate quiz answers, simulating the logic that checks user responses against correct answers and calculates a score. This allows the app to determine if users have passed the quiz and can unlock the reporting feature based on their performance.
 export const evaluateQuiz = (userAnswers, correctAnswers) => {
   const score = userAnswers.filter((ans, i) => ans === correctAnswers[i]).length;
   const percentage = (score / correctAnswers.length) * 100;
@@ -15,18 +15,15 @@ export const evaluateQuiz = (userAnswers, correctAnswers) => {
   return {
     passed: percentage >= 80,
     score: percentage,
-   
-    message: percentage >= 80 ? "Placeholder message" : "Placeholder message"
+    message: percentage >= 80 ? "Passed" : "Failed"
   };
 };
 
-
 export const validateEscalation = (dateString, hasProof) => {
-    if (!dateString) return { isValid: false, daysRemaining: 14 };
+  if (!dateString) return { isValid: false, daysRemaining: 14 };
     
   const diffInDays = Math.floor((new Date() - new Date(dateString)) / (1000 * 3600 * 24));
-
-    const remaining = 14 - diffInDays;
+  const remaining = 14 - diffInDays;
 
   return {
     isValid: diffInDays >= 14 && hasProof,
@@ -43,8 +40,6 @@ export const getStatusProgress = (status) => {
   return config[status] || { color: '#CBD5E1', percent: 0, label: status };
 };
 
-
-//Added - function to extract user initials for display in the UI, such as in the user avatar. This provides a simple way to personalize the user experience while maintaining a clean and consistent design.
 export const getInitials = (user) => {
   if (!user) return "";
   const first = (user.firstName)?.[0] || "";
@@ -52,7 +47,6 @@ export const getInitials = (user) => {
   return (first + last).toUpperCase();
 };
 
-//Added- function to map recent activity types to corresponding icons, simulating a visual representation of user actions in the activity feed. This enhances the user experience by providing intuitive visual cues for different types of activities within the app.
 export const getActivityIcon = (action = "") => {
   if (action.includes("Complaint") || action.includes("Report")) return <img src={report} alt="Report" className="w-5 h-5" />;
   if (action.includes("Module") || action.includes('Lesson')) return <img src={book} alt="Education" className="w-5 h-5" />;
@@ -66,10 +60,8 @@ export const getActivityIcon = (action = "") => {
   );
 };
 
-//Added - function to calculate education progress percentage, simulating the logic that determines how much of the educational content a user has completed. This allows the app to provide feedback on user progress and encourage completion of educational modules.
-
 export const calculateProgress = (user, totalModulesCount) => {
-if (!user?.completedModules) return 0; 
+  if (!user?.completedModules) return 0; 
   const completedCount = user.completedModules.length;
   return Math.round((completedCount / totalModulesCount) * 100);
 };
@@ -77,9 +69,6 @@ if (!user?.completedModules) return 0;
 export const isModuleCompleted = (user, moduleId) => {
   return user?.completedModules?.includes(moduleId) ? 100 : 0;
 };
-
-
- //Added - function to update lesson progress, simulating user interaction with the educational content. This allows the app to track which lessons have been completed and unlock subsequent modules accordingly.
 
 export const updateLessonProgress = (userId, moduleId, lessonId) => {
   const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
@@ -98,24 +87,16 @@ export const updateLessonProgress = (userId, moduleId, lessonId) => {
   }
 };
 
-
 export const completeModuleQuiz = (userId, moduleId, score) => {
   const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
   const index = users.findIndex(u => u.id === userId);
 
-  //The requirement: 80% to pass
   if (index !== -1 && score >= 80) {
     if (!users[index].completedModules) users[index].completedModules = [];
     if (!users[index].completedModules.includes(moduleId)) {
       users[index].completedModules.push(moduleId);
     }
-
-   
-
-
-
     
-    //Checks if all required modules from the Hub are done
     const required = ['harassment', 'discrimination', 'wage-hour', 'retaliation', 'procedures'];
     users[index].hasCompletedEducation = required.every(m => 
       users[index].completedModules.includes(m)
@@ -125,8 +106,6 @@ export const completeModuleQuiz = (userId, moduleId, score) => {
     return users[index];
   }
 };
-
-//Added - function to retrieve complaints, simulating fetching data from a backend. This allows the app to display existing complaints and their statuses.
 
 export const submitComplaint = async (data) => {
   try {
@@ -142,14 +121,124 @@ export const submitComplaint = async (data) => {
     console.error("Failed to submit complaint", err);
     return { success: false, message: err.response?.data?.message || "Submission failed" };
   }
-}
-
-
-//Added - dashboard activity logs, simulating a feature that allows users to see a history of their interactions with the app, such as submitted complaints and completed educational modules. This enhances user engagement and provides a sense of progress within the app.
+};
 
 export const logActivity = (userId, action, details) => {
   const logs = JSON.parse(localStorage.getItem('fs_logs') || '[]');
   const newLog = { userId, action, details, timestamp: new Date().toISOString() };
-  
   localStorage.setItem('fs_logs', JSON.stringify([newLog, ...logs].slice(0, 10)));
+};
+
+
+//Added - Course Progress Tracker
+
+const PROGRESS_KEY = 'fairsay_course_progress';
+
+export const courseOrder = [
+  'workplace-harassment',
+  'discrimination-laws',
+  'complaint-procedures',
+  'wage-hour',
+  'retaliation-protection',
+];
+
+//Added - Get course progress from localStorage
+
+export const getProgress = () => {
+  try {
+    const stored = localStorage.getItem(PROGRESS_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    
+    return {
+      'workplace-harassment': { unlocked: true, completed: false, score: 0 }
+    };
+  } catch (error) {
+    console.error('Error reading progress:', error);
+    return {
+      'workplace-harassment': { unlocked: true, completed: false, score: 0 }
+    };
+  }
+};
+
+//Added - Save course progress to localStorage
+export const saveProgress = (progress) => {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+};
+
+//Added - Mark a course as completed and unlock the next one
+ 
+export const completeCourse = (courseId, score) => {
+  const progress = getProgress();
+  
+  // Mark current course as completed
+  progress[courseId] = {
+    unlocked: true,
+    completed: true,
+    score: score,
+    completedAt: new Date().toISOString()
+  };
+  
+  // Unlock next course if it exists
+  const currentIndex = courseOrder.indexOf(courseId);
+  if (currentIndex !== -1 && currentIndex < courseOrder.length - 1) {
+    const nextCourseId = courseOrder[currentIndex + 1];
+    if (!progress[nextCourseId]) {
+      progress[nextCourseId] = { unlocked: true, completed: false, score: 0 };
+    } else {
+      progress[nextCourseId].unlocked = true;
+    }
+  }
+  
+  saveProgress(progress);
+  return progress;
+};
+
+//Added - Check if a course is unlocked
+export const isCourseUnlocked = (courseId) => {
+  const progress = getProgress();
+  return progress[courseId]?.unlocked === true;
+};
+
+//Added - Check if a course is completed
+export const isCourseCompleted = (courseId) => {
+  const progress = getProgress();
+  return progress[courseId]?.completed === true;
+};
+
+// Added -Get the next course in sequence, returns null if last course
+export const getNextCourse = (currentCourseId) => {
+  const currentIndex = courseOrder.indexOf(currentCourseId);
+  if (currentIndex !== -1 && currentIndex < courseOrder.length - 1) {
+    return courseOrder[currentIndex + 1];
+  }
+  return null;
+};
+
+//Added - Get progress statistics
+export const getProgressStats = () => {
+  const progress = getProgress();
+  const completed = courseOrder.filter(id => progress[id]?.completed === true).length;
+  const unlocked = courseOrder.filter(id => progress[id]?.unlocked === true).length;
+  
+  return {
+    completed,
+    unlocked,
+    total: courseOrder.length,
+    completionPercentage: Math.round((completed / courseOrder.length) * 100)
+  };
+};
+
+//Added - Reset all progress (for testing/admin purposes)
+export const resetProgress = () => {
+  const initialProgress = {
+    'workplace-harassment': { unlocked: true, completed: false, score: 0 }
+  };
+  saveProgress(initialProgress);
+  return initialProgress;
 };

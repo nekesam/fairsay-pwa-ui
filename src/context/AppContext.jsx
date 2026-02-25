@@ -10,6 +10,56 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [alert, setAlert] = useState(null);//For the notification/alert system
   const [loading, setLoading] = useState(true); //For handling initial loading state, such as checking for existing sessions or fetching user data on app start
+ const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('fs_notifications');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+
+  // Sync notifications to localStorage
+  useEffect(() => {
+    localStorage.setItem('fs_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  // 2. Fetch fresh notifications from the backend on login/app start
+  useEffect(() => {
+    const syncNotifications = async () => {
+      try {
+        const res = await api.get('/notifications');
+        if (res.data.success) {
+          setNotifications(res.data.notifications);
+        }
+      } catch (err) {
+        console.log("System working in offline mode or backend unreachable.");
+      }
+    };
+
+    if (user) syncNotifications();
+  }, [user]);
+
+  const addNotification = (title, desc, type = 'info') => {
+    const newNotif = {
+      id: Date.now().toString(),
+      title,
+      desc,
+      type,
+      unread: true,
+      timestamp: 'Just now'
+    };
+    setNotifications(prev => [newNotif, ...prev].slice(0, 20)); // Keep last 20
+  };
+    
+  const markAllAsRead = async () => {
+    const previousState = [...notifications];
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+
+    try {
+      await api.put('/notifications/read-all');
+    } catch (err) {
+      console.error("Failed to sync notifications to server, rolling back.");
+      setNotifications(previousState);
+    }
+  };
 
   //To trigger and auto-dismiss alerts after 4 seconds
   const showAlert = (message, type= 'info') => {
@@ -66,11 +116,14 @@ const updateUser = async (updatedData) => {
     }
 
   setUser(prev => ({ ...prev, ...updatedData, profile_completed: true}));
-  showAlert("Profile updated successfully!", "success")
+
+  addNotification("Profile Updated", "Your account information was saved successfully", "success");
+  showAlert("Profile updated successfully!", "success");
   return true;
 } catch (err) {
   const errorMsg = err.response?.data?.message || "Update failed"
   console.error("Profile update failed", err);
+  addNotification("Update Failed", "We couldn't save your profile changes", "error");
   showAlert(errorMsg, "error")
   return false;
 };
@@ -119,7 +172,7 @@ const updateUser = async (updatedData) => {
 
  
   return (
-    <AppContext.Provider value={{ user, setUser,register,  login, updateUser, loading, alert, showAlert, logout }}>
+    <AppContext.Provider value={{ user, setUser,register,  login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead }}>
       {children}
     </AppContext.Provider>
   );

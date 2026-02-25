@@ -1,8 +1,11 @@
 import Logo from "../components/Logo";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { APP_NAME } from "../utils/constants";
 
 export default function CheckEmail() {
+
+  const location = useLocation();
+  const email = location.state?.email || "Your email address"
   return (
     <div
       className="min-h-screen flex justify-center items-center px-4 py-7"

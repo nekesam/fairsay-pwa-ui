@@ -9,6 +9,7 @@ import book from '../images/Book.svg';
 import report from '../images/Report.svg';
 import lock from '../images/Lock.svg';
 import social from '../images/Social.svg';
+import people from '../images/People.svg';
 import analytics from '../images/Analytics.svg';
 
 //Added - the web app name
@@ -89,7 +90,7 @@ export const IMPACT_TYPES = [
 
 //Added - Initial state blueprint for the complaint form
 export const INITIAL_COMPLAINT_FORM_DATA = {
-  complaintCategory: "", 
+  violationCategory: "", 
   complaintTitle: "",
   detailedDescription: "",
   dateOfIncident: "",
@@ -185,7 +186,7 @@ export const APP_STEPS = {
 //Added - file upload validation rules, simulating the logic that ensures users can only upload files that meet certain criteria (such as file type and size limits). This helps prevent issues with file handling and ensures a smoother user experience when attaching evidence to complaints.
 
 export const FILE_UPLOAD_RULES = {
-  allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/doc', 'application/docx'],
+  allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'imahe/jpg'],
   maxSize: 10 * 1024 * 1024 // 10MB
 };
 
@@ -233,7 +234,7 @@ export const LANDING_FEATURES = [
     id: 'ai',
     title: "AI-Powered Guidance",
     desc: "RAG system provides personalized recommendations, answers FAQs, and suggests tailored next steps based on your situation.",
-    icon: social,
+    icon: people,
     color: "blue"
   },
   {

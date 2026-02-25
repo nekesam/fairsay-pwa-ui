@@ -2,14 +2,32 @@ import Logo from "../components/Logo";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { APP_NAME } from "../utils/constants";
+import api from "../services/api";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/check-email");
+   setIsSubmitting(true);
+   setError(null);
+   setMessage(null);
+
+   try {
+    const response = await api.post("/auth/forgot-password", { email });
+    navigate("/check-email", { state: { email } });
+   } catch (err) {
+    console.error("Forgot-Password request failed", err);
+    setError(
+      err.response?.data?.message || "Failed to send link. Please check email and retry"
+    );
+   } finally {
+    setIsSubmitting(false);
+   }
   };
 
   return (
@@ -35,6 +53,13 @@ export default function ForgotPassword() {
               No worries! Enter your email and we'll send you reset instructions.
             </p>
           </div>
+
+          {/* Display Success or Error Messages */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Address */}
@@ -67,12 +92,14 @@ export default function ForgotPassword() {
                   />
                 </svg>
                 <input
+                  id="email"
                   type="email"
+                  autoComplete="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   className="w-full pl-11 pr-4 py-[11px] border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent text-[#333] placeholder:text-[#9CA3AF]"
-                  required
                 />
               </div>
             </div>
@@ -80,12 +107,13 @@ export default function ForgotPassword() {
             {/* Send Reset Link Button */}
             <button
               type="submit"
+              disabled={isSubmitting || !email}
               className="w-full py-3.5 rounded-lg font-semibold text-sm text-white transition-all duration-300 hover:shadow-lg"
               style={{
                 background: "linear-gradient(90deg, #1E3A8A 0%, #0F766E 100%)",
               }}
             >
-              Send reset link
+              {isSubmitting ? "Sending..." : "Send reset link"}
             </button>
 
             {/* Back to Sign In */}
