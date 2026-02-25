@@ -37,7 +37,6 @@ export default function SignIn() {
     >
       <div className="w-full max-w-[504px] flex flex-col items-center gap-7">
         {/* Logo */}
-       {/* Logo Header - Fixed! */}
 <div className="mb-2 transform scale-125 origin-center">
   <Logo />
 </div>

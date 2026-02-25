@@ -4,9 +4,7 @@ import report from '../images/Report.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import danger from '../images/Danger.svg';
 
-// ==========================================
-// ORIGINAL HELPERS
-// ==========================================
+
 
 export const evaluateQuiz = (userAnswers, correctAnswers) => {
   const score = userAnswers.filter((ans, i) => ans === correctAnswers[i]).length;
@@ -173,7 +171,7 @@ export const saveProgress = (progress) => {
 
 //Added - Mark a course as completed and unlock the next one
  
-export const completeCourse = (courseId, score) => {
+export const completeCourse = (courseId, score, userId) => {
   const progress = getProgress();
   
   // Mark current course as completed
@@ -196,6 +194,14 @@ export const completeCourse = (courseId, score) => {
   }
   
   saveProgress(progress);
+
+  if (userId) {
+    logActivity(
+      userId,
+      "Module Completed",
+      `You completed ${courseId.replace(/-/g, '')} with a score of ${score}%`
+    );
+  }
   return progress;
 };
 
@@ -241,4 +247,22 @@ export const resetProgress = () => {
   };
   saveProgress(initialProgress);
   return initialProgress;
+};
+
+export const getCourseProgress = (courseId) => {
+  const progress = getProgress();
+  
+  //Added - check that the course is fully marked complete in your system, and return 100%
+  if (progress[courseId]?.completed) return 100;
+  
+  // Otherwise, check if they are currently inside a lesson (partial progress)
+  try {
+    const storedLessons = JSON.parse(localStorage.getItem(`fs_course_${courseId}`) || '[]');
+    if (storedLessons.length > 0) {
+       // Assuming average of 4 lessons per course, calculate rough percentage
+       return Math.min(99, Math.round((storedLessons.length / 4) * 100));
+    }
+  } catch(e) {}
+
+  return 0;
 };

@@ -1,200 +1,179 @@
+// src/data/courses.js
+
 export const courses = [
+  {
+    id: "workplace-harassment",
+    title: "Workplace Harassment",
+    description: "Learn to identify and respond to workplace harassment, ensuring a safe and respectful environment under Nigerian law.",
+    icon: "shield",
+    color: "#DC2626", 
+    progress: 0,
+    lessons: [
+      { id: 1, duration: "5 min" }
+    ]
+  },
+  {
+    id: "discrimination-laws",
+    title: "Discrimination Laws",
+    description: "Understand Section 42 of the 1999 Constitution and how it protects you from unfair treatment.",
+    icon: "balance",
+    color: "#0F766E", 
+    progress: 0,
+    lessons: [
+      { id: 1, duration: "6 min" },
+      { id: 2, duration: "7 min" }
+    ]
+  },
+  {
+    id: "complaint-procedures",
+    title: "Complaint Procedures",
+    description: "Master the correct internal procedures and how to escalate to the Ministry of Labour or the NICN.",
+    icon: "dollar", 
+    color: "#B45309", 
+    progress: 0,
+    lessons: [
+      { id: 1, duration: "5 min" },
+      { id: 2, duration: "4 min" },
+      { id: 3, duration: "6 min" }
+    ]
+  },
   {
     id: "wage-hour",
     title: "Wage & Hour Rights",
-    description:
-      "Learn about minimum wage, overtime pay, pay stub requirements, and how to protect your earnings.",
+    description: "Learn about the National Minimum Wage, overtime pay, and how to protect your earnings in Nigeria.",
     icon: "dollar",
-    color: "#1E3A8A",
-    progress: 75,
+    color: "#1E3A8A", 
+    progress: 0, 
     lessons: [
-      { id: 1, title: "Introduction to Wage & Hour Laws", duration: "3 min" },
-      { id: 2, title: "Minimum Wage Requirements", duration: "5 min" },
-      { id: 3, title: "Overtime Pay Rules", duration: "6 min" },
-      { id: 4, title: "Pay Stub Rights & Recordkeeping", duration: "4 min" },
-    ],
+      { id: 1, title: "Introduction to the Labour Act", duration: "3 min" },
+      { id: 2, title: "National Minimum Wage", duration: "5 min" },
+      { id: 3, title: "Working Hours & Overtime", duration: "6 min" },
+      { id: 4, title: "Pay Rights & Deductions", duration: "4 min" },
+    ]
   },
   {
-    id: "workplace-safety",
-    title: "Workplace Safety Rights",
-    description:
-      "Understand OSHA standards, your right to a safe workplace, and how to report hazards.",
-    icon: "shield",
-    color: "#0F766E",
-    progress: 0,
-    lessons: [
-      { id: 1, title: "OSHA and Your Rights", duration: "4 min" },
-      { id: 2, title: "Reporting Workplace Hazards", duration: "5 min" },
-      { id: 3, title: "Workers' Compensation Basics", duration: "6 min" },
-      { id: 4, title: "Retaliation Protections", duration: "4 min" },
-    ],
-  },
-  {
-    id: "anti-discrimination",
-    title: "Anti-Discrimination Rights",
-    description:
-      "Know your rights against discrimination, harassment, and how to file an EEOC complaint.",
-    icon: "balance",
-    color: "#7C3AED",
-    progress: 0,
-    lessons: [
-      { id: 1, title: "Types of Workplace Discrimination", duration: "4 min" },
-      { id: 2, title: "Sexual Harassment Laws", duration: "5 min" },
-      { id: 3, title: "Filing an EEOC Complaint", duration: "6 min" },
-      { id: 4, title: "Retaliation and Your Protections", duration: "3 min" },
-    ],
-  },
-  {
-    id: "family-leave",
-    title: "Family & Medical Leave",
-    description:
-      "Understand FMLA, parental leave, and how to request medical leave without losing your job.",
+    id: "retaliation-protection",
+    title: "Retaliation Protection",
+    description: "Learn about the legal protections you have against employer retaliation when speaking up or joining a trade union.",
     icon: "heart",
-    color: "#DC2626",
+    color: "#6D28D9", 
     progress: 0,
     lessons: [
-      { id: 1, title: "FMLA Eligibility and Coverage", duration: "4 min" },
-      { id: 2, title: "How to Request Leave", duration: "3 min" },
-      { id: 3, title: "Employer Obligations", duration: "5 min" },
-      { id: 4, title: "Returning from Leave", duration: "3 min" },
-    ],
-  },
+      { id: 1, duration: "5 min" },
+      { id: 2, duration: "4 min" },
+      { id: 3, duration: "5 min" },
+      { id: 4, duration: "4 min" },
+      { id: 5, duration: "6 min" }
+    ]
+  }
 ];
 
 export const wageHourLessons = [
   {
     id: 1,
-    title: "Introduction to Wage & Hour Laws",
+    title: "Introduction to the Labour Act",
     duration: "3 min",
-    completed: true,
-    heading: "Welcome to Wage & Hour Rights",
-    body: "Understanding your wage and hour rights is crucial for ensuring fair compensation. The Fair Labor Standards Act (FLSA) establishes minimum wage, overtime pay, recordkeeping, and youth employment standards.",
+    heading: "Welcome to Nigerian Wage Rights",
+    body: "Understanding your wage rights is crucial for ensuring fair compensation. The Nigerian Labour Act (Chapter L1, LFN 2004) is the primary legislation that protects workers' rights, standardizes contracts, and regulates wages.",
     learnItems: [
-      "Federal and state minimum wage requirements",
-      "Overtime calculation and eligibility",
-      "Pay stub requirements and wage theft",
+      "Overview of the Nigerian Labour Act",
+      "Protection of wages and how they must be paid",
+      "Your right to a written contract within 3 months",
       "Common violations and how to report them",
     ],
     callout: {
       type: "info",
-      text: "Did You Know? According to the Economic Policy Institute, wage theft affects millions of workers annually, totaling billions in stolen wages.",
+      text: "Did You Know? Under Section 1 of the Labour Act, wages must be paid in legal tender (Naira). Paying workers with goods or accommodations instead of actual money is illegal.",
     },
     sections: [],
   },
   {
     id: 2,
-    title: "Minimum Wage Requirements",
+    title: "National Minimum Wage",
     duration: "5 min",
-    completed: true,
-    heading: "Understanding Minimum Wage",
-    body: "The federal minimum wage is $7.25 per hour, but many states and cities have higher minimum wages. Employers must pay the highest applicable rate.",
+    heading: "Understanding the Minimum Wage",
+    body: "The National Minimum Wage Act legally binds employers (with 50 or more workers) to pay their employees a baseline salary. As of recent legislation, the minimum wage in Nigeria is ₦70,000 per month.",
     learnItems: [],
     callout: {
       type: "info",
-      text: "Example: If federal minimum is $7.25 but your state requires $15.00, your employer must pay you $15.00 per hour.",
+      text: "Note: The minimum wage applies to full-time workers. Part-time or piece-rate workers have their wages calculated proportionally.",
     },
     sections: [
       {
         heading: "Key Points:",
         items: [
-          { label: "Federal Minimum:", text: "$7.25/hour (since 2009)" },
-          { label: "State Minimums:", text: "Many states require higher rates" },
-          {
-            label: "Tipped Employees:",
-            text: "Different rules apply ($2.13/hour + tips must equal minimum wage)",
-          },
-          {
-            label: "Youth Minimum:",
-            text: "Workers under 20 can be paid $4.25/hour for first 90 days",
-          },
+          { label: "Current Minimum:", text: "₦70,000 per month" },
+          { label: "Coverage:", text: "Establishments employing 50 or more persons" },
+          { label: "Exemptions:", text: "Establishments with fewer than 50 workers, or workers employed on a part-time basis." },
         ],
       },
       {
         heading: "What to Check:",
         items: [
-          { label: "", text: "Your state's current minimum wage" },
-          { label: "", text: "Any local/city minimum wage ordinances" },
-          { label: "", text: "Industry-specific requirements" },
+          { label: "", text: "Does your basic salary meet the ₦70,000 threshold?" },
+          { label: "", text: "Are allowances being unfairly grouped to mimic the minimum wage?" },
         ],
       },
     ],
   },
   {
     id: 3,
-    title: "Overtime Pay Rules",
+    title: "Working Hours & Overtime",
     duration: "6 min",
-    completed: true,
-    heading: "Overtime Compensation",
-    body: "Non-exempt employees must receive overtime pay for hours worked over 40 in a workweek at a rate of at least 1.5 times their regular rate.",
+    heading: "Time and Compensation",
+    body: "According to Section 13 of the Labour Act, normal hours of work can be fixed by mutual agreement, by a collective bargaining agreement, or by an industrial wages board. Typically, normal working hours are 8 hours a day or 40 hours a week.",
     learnItems: [],
     callout: {
       type: "warning",
-      text: 'Common Violation: Employers cannot avoid overtime by calling you a "manager" or paying you a salary. Specific duties tests must be met.',
+      text: 'Common Violation: Forcing employees to work beyond standard hours without overtime compensation or time off in lieu is a breach of labor rights.',
     },
     sections: [
       {
         heading: "Overtime Basics:",
         items: [
-          { label: "Rate:", text: "1.5x regular pay (time and a half)" },
-          { label: "Threshold:", text: "After 40 hours in a workweek" },
-          { label: "Workweek:", text: "Any fixed 7-day period (not calendar week)" },
-          { label: "Coverage:", text: "Most hourly employees; some salaried workers" },
+          { label: "Threshold:", text: "Any time worked beyond the agreed normal hours." },
+          { label: "Rate:", text: "Must be paid at an overtime rate (often 1.5x on weekdays, 2x on public holidays) as stipulated in your contract or collective agreement." },
+          { label: "Rest Periods:", text: "If you work 6 or more hours a day, you are entitled to at least a 1-hour rest interval." },
         ],
       },
       {
-        heading: "Who is Exempt?",
-        intro:
-          "Certain employees are exempt from overtime if they meet specific tests:",
+        heading: "Leave Entitlements:",
+        intro: "Nigerian law guarantees paid time off to rest:",
         items: [
-          { label: "", text: "Executive employees" },
-          { label: "", text: "Administrative employees" },
-          { label: "", text: "Professional employees" },
-          { label: "", text: "Computer employees" },
-          { label: "", text: "Outside sales employees" },
+          { label: "Annual Leave:", text: "At least 6 working days of paid leave after 12 months of continuous service." },
+          { label: "Sick Leave:", text: "Up to 12 working days of paid sick leave per year (with a medical certificate)." },
+          { label: "Maternity Leave:", text: "12 weeks of maternity leave (at least 50% pay if employed for 6+ months)." },
         ],
-      },
-      {
-        heading: "Calculating Overtime:",
-        callout: {
-          type: "success",
-          text: "Example:\nRegular Rate: $20/hour\nHours Worked: 50 hours\nRegular Pay: 40 hours × $20 = $800\nOvertime Pay: 10 hours × $30 (1.5 × $20) = $300\nTotal: $1,100",
-        },
-        items: [],
       },
     ],
   },
   {
     id: 4,
-    title: "Pay Stub Rights & Recordkeeping",
+    title: "Pay Rights & Deductions",
     duration: "4 min",
-    completed: false,
-    heading: "Your Right to Accurate Records",
-    body: "Employers must maintain accurate records and provide clear pay statements showing how your wages were calculated.",
+    heading: "Protecting Your Take-Home Pay",
+    body: "Employers cannot arbitrarily deduct money from your salary. The Labour Act strictly regulates what can and cannot be removed from your wages.",
     learnItems: [],
     callout: {
       type: "info",
-      text: "Pro Tip: Take photos of your time clock or digital time records regularly. This evidence is invaluable if you need to file a complaint.",
+      text: "Pro Tip: Always review your payslip. Ensure statutory deductions (PAYE tax, Pension, NHF) are actually being remitted to the government and not just pocketed by your employer.",
     },
     sections: [
       {
-        heading: "Pay Stub Requirements:",
-        intro: "While federal law doesn't require pay stubs, most states do. Your pay stub should include:",
+        heading: "Lawful vs. Unlawful Deductions:",
+        intro: "What can your employer deduct?",
         items: [
-          { label: "", text: "Gross wages earned" },
-          { label: "", text: "Total hours worked (for hourly employees)" },
-          { label: "", text: "Deductions (taxes, insurance, etc.)" },
-          { label: "", text: "Net pay (take-home amount)" },
-          { label: "", text: "Pay period dates" },
-          { label: "", text: "Employer name and address" },
+          { label: "Lawful:", text: "Statutory taxes (PAYE), Pension contributions (8%), National Housing Fund (NHF), or approved trade union dues." },
+          { label: "Lawful (with consent):", text: "Repayment of salary advances or loans." },
+          { label: "Unlawful:", text: "Fines for breakages, damages, or mistakes (unless explicitly agreed upon and proven willful negligence), or deducting wages as punishment." },
         ],
       },
       {
-        heading: "Keep Your Own Records:",
+        heading: "Escalation:",
         items: [
-          { label: "", text: "Track hours worked daily" },
-          { label: "", text: "Save all pay stubs" },
-          { label: "", text: "Document overtime hours" },
-          { label: "", text: "Note any unpaid time or wage discrepancies" },
+          { label: "", text: "Report wage theft to your HR or Union representative." },
+          { label: "", text: "Escalate to the Federal Ministry of Labour and Employment." },
+          { label: "", text: "Legal action can be taken at the National Industrial Court of Nigeria (NICN)." },
         ],
       },
     ],
@@ -204,37 +183,37 @@ export const wageHourLessons = [
 export const wageHourQuiz = [
   {
     id: 1,
-    question: "1. What is the federal minimum wage as of 2024?",
-    options: ["$7.25/hour", "$10.00/hour", "$15.00/hour", "$12.50/hour"],
-    correctIndex: 0,
+    question: "1. What is the current National Minimum Wage in Nigeria?",
+    options: ["₦30,000/month", "₦50,000/month", "₦70,000/month", "₦100,000/month"],
+    correctIndex: 2,
   },
   {
     id: 2,
-    question: "2. At what rate must overtime be paid?",
+    question: "2. Under the Nigerian Labour Act, can your employer pay your wages with goods instead of Naira?",
     options: [
-      "Regular rate",
-      "1.25x regular rate",
-      "1.5x regular rate",
-      "2x regular rate",
+      "Yes, if it's equal to the minimum wage",
+      "Yes, if the goods are food items",
+      "No, wages must be paid in legal tender",
+      "Only for part-time workers",
     ],
     correctIndex: 2,
   },
   {
     id: 3,
     question:
-      "3. After how many hours in a workweek does overtime begin?",
-    options: ["35 hours", "37.5 hours", "40 hours", "45 hours"],
+      "3. How many weeks of maternity leave is the minimum standard under the Labour Act?",
+    options: ["6 weeks", "8 weeks", "12 weeks", "16 weeks"],
     correctIndex: 2,
   },
   {
     id: 4,
-    question: "4. Which is NOT typically required on a pay stub?",
+    question: "4. Which of these is considered an UNLAWFUL deduction from your salary?",
     options: [
-      "Gross wages",
-      "Hours worked",
-      "Social Security Number",
-      "Deductions",
+      "PAYE Tax",
+      "Pension Contribution",
+      "Trade Union Dues",
+      "Arbitrary fines for making a mistake",
     ],
-    correctIndex: 2,
+    correctIndex: 3,
   },
 ];

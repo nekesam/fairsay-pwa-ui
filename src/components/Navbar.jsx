@@ -79,7 +79,7 @@ export default function Navbar() {
     }`}>
       <div className="max-w-[95%] mx-auto flex items-center justify-between">
         <Link to="/dashboard" className="hover:opacity-80 transition-opacity">
-          <Logo scrolled={scrolled} />
+          <Logo variant="nav" scrolled={scrolled} />
         </Link>
         <div className="flex items-center gap-4">
           
