@@ -27,7 +27,8 @@ const ProtectedRoutes = ({ children, step }) => {
          return <Navigate to="/account-success" replace />;
     }
    
-    if (step === APP_STEPS.EDUCATION && !user.hasCompletedEducation) { return <Navigate to="/learning" replace />;
+    if (step === APP_STEPS.EDUCATION && !user.course_completed) {
+      return <Navigate to="/learning" replace />;
     }
 
     return children;

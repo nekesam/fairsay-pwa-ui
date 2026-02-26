@@ -98,7 +98,10 @@ export const wageHourLessons = [
         heading: "Key Points:",
         items: [
           { label: "Federal Minimum:", text: "$7.25/hour (since 2009)" },
-          { label: "State Minimums:", text: "Many states require higher rates" },
+          {
+            label: "State Minimums:",
+            text: "Many states require higher rates",
+          },
           {
             label: "Tipped Employees:",
             text: "Different rules apply ($2.13/hour + tips must equal minimum wage)",
@@ -137,8 +140,14 @@ export const wageHourLessons = [
         items: [
           { label: "Rate:", text: "1.5x regular pay (time and a half)" },
           { label: "Threshold:", text: "After 40 hours in a workweek" },
-          { label: "Workweek:", text: "Any fixed 7-day period (not calendar week)" },
-          { label: "Coverage:", text: "Most hourly employees; some salaried workers" },
+          {
+            label: "Workweek:",
+            text: "Any fixed 7-day period (not calendar week)",
+          },
+          {
+            label: "Coverage:",
+            text: "Most hourly employees; some salaried workers",
+          },
         ],
       },
       {
@@ -178,7 +187,8 @@ export const wageHourLessons = [
     sections: [
       {
         heading: "Pay Stub Requirements:",
-        intro: "While federal law doesn't require pay stubs, most states do. Your pay stub should include:",
+        intro:
+          "While federal law doesn't require pay stubs, most states do. Your pay stub should include:",
         items: [
           { label: "", text: "Gross wages earned" },
           { label: "", text: "Total hours worked (for hourly employees)" },
