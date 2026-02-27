@@ -28,18 +28,16 @@ import AdminComplaints from './pages/admin/AdminComplaints';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSecurity from './pages/admin/AdminSecurity';
 import ComplaintFeedback from './pages/ComplaintFeedback';
-import AnonymousReport from './pages/AnonymousReport';
 
 function App() {
   return (
     <AppProvider>
-    <BrowserRouter>
-      <Routes>
-       
-     <Route path="/" element={<LandingPage />} />
-        
-        {/* Authentication Routes */}
-         <Route path="/sign-in" element={<SignIn />} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          
+          {/* Authentication Routes */}
+          <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/check-email" element={<CheckEmail />} />
@@ -69,6 +67,23 @@ function App() {
             </ProtectedRoutes>
           } />
 
+          {/* User Profile Management */}
+          <Route path="/profile" element={
+            <ProtectedRoutes>
+              <Profile />
+            </ProtectedRoutes>
+          } />
+          <Route path="/profile/settings" element={
+            <ProtectedRoutes>
+              <ProfileSettings />
+            </ProtectedRoutes>
+          } />
+          <Route path="/profile/delete" element={
+            <ProtectedRoutes>
+              <DeleteAccount />
+            </ProtectedRoutes>
+          } />
+
           {/* Complaint Management - Requires Profile Verification */}
           <Route path="/my-complaints" element={
             <ProtectedRoutes step={APP_STEPS.PROFILE_COMPLETION}>
@@ -87,9 +102,14 @@ function App() {
               <ComplaintSuccess />
             </ProtectedRoutes>
           } />
+          <Route path="/complaint-feedback" element={
+            <ProtectedRoutes>
+              <ComplaintFeedback />
+            </ProtectedRoutes>
+          } />
 
           {/* Learning Hub */}
-         <Route path="/learning" element={<ProtectedRoutes><EducationHub /></ProtectedRoutes>} />
+          <Route path="/learning" element={<ProtectedRoutes><EducationHub /></ProtectedRoutes>} />
           <Route path="/learning/lesson/:courseId/:lessonId" element={<ProtectedRoutes><Lesson /></ProtectedRoutes>} />
           <Route path="/learning/quiz/:courseId" element={<ProtectedRoutes><Quiz /></ProtectedRoutes>} />
           
@@ -99,7 +119,8 @@ function App() {
               <AIAssistant />
             </ProtectedRoutes>
           } />
-          {/*Whistleblowing Route*/}
+          
+          {/* Whistleblowing Route */}
           <Route path="/whistleblowing" element={
             <ProtectedRoutes>
               <Whistleblowing />
