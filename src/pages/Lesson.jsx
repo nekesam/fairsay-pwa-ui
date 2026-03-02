@@ -133,9 +133,7 @@ export default function Lesson() {
           {/* Sidebar */}
           <aside className="w-full lg:w-56 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sticky top-24">
-              <h2 className="font-bold text-gray-900 text-base mb-4">
-                Wage & Hour Rights
-              </h2>
+              <h2 className="font-bold text-gray-900 text-base mb-4">{courseTitle}</h2>
               <nav className="space-y-2">
                 {lessons.map((l) => {
                   const isCompleted = completedLessons.includes(l.id);
