@@ -118,11 +118,11 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem('fs_token', token);
       setUser(normalizedUser);
     let redirectTo = "/dashboard";
-    if (!normalizedUser.profile_completed) {
-      redirectTo = "/complete-profile";
-    } else if (normalizedUser.isAdmin) {
+    if (normalizedUser.isAdmin) {
       redirectTo = "/admin/dashboard";
-    }
+    } else if (!normalizedUser.profile_completed) {
+      redirectTo = "/complete-profile";
+    } 
 
     return { success: true, user: normalizedUser, redirectTo }; 
   } catch (err) {
