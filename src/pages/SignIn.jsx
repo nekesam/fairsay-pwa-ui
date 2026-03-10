@@ -24,20 +24,13 @@ export default function SignIn() {
     setAlert({ show: false, message: "", type: "error" });
     setIsSubmitting(true);
 
-      const result = await login(formData.email, formData.password);
+    const result = await login(formData.email, formData.password);
       
-      try {
-
-      if (result.success) {
-        navigate(result.redirectTo || APP_STEPS.DASHBOARD);
-      } else {
-        setAlert({ show: true, message: result.message || "Invalid credentials", type: "error" });
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setAlert({ show: true, message: "Could not connect to the server.", type: "error" });
-    } finally {
-      setIsSubmitting(false);
+    if (result.success) {
+      navigate(result.redirectTo || APP_STEPS.DASHBOARD);
+    } else {
+      setAlert({ show: true, message: result.message || "Invalid credentials", type: "error" });
+      setIsSubmitting(false); 
     }
   };
 
