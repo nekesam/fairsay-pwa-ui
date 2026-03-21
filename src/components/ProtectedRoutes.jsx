@@ -50,12 +50,16 @@ const ProtectedRoutes = ({ children, requireAdmin = false }) => {
     const needsVerification = !user.verification_status || user.verification_status === 'unverified' || user.verification_status === 'rejected';
 
     //Restrict skipped users from sensitive forms
-    const restrictedPaths = ['/complaint', '/my-complaints', '/submit']; 
+    const restrictedPaths = ['/complaints', '/my-complaints', '/submit', '/file-complaints']; 
     const isTryingToAccessRestricted = restrictedPaths.some(path => location.pathname.includes(path));
 
     if (isTryingToAccessRestricted && (needsProfile || needsVerification)) {
         // If they try to sneak into the complaint form without being fully verified, kick them to setup
         return <Navigate to={needsProfile ? APP_STEPS.PROFILE_COMPLETION : APP_STEPS.EMPLOYEE_VERIFICATION} replace />;
+    }
+
+    if (!user.course_completed) {
+        return <Navigate to="/learning" replace />
     }
 
     //Profile Route Guard
