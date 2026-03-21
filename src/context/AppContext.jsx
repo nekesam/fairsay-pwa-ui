@@ -67,7 +67,7 @@ export const AppProvider = ({ children }) => {
 
     try {
       if (user && !user.id.toString().startsWith('dev-')) {
-        await api.put('/notifications/read-all');
+        await api.patch('/notifications/read-all');
       }
     } catch (err) {
       console.error("Failed to sync notifications to server, rolling back.");
