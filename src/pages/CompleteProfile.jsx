@@ -42,6 +42,7 @@ sessionStorage.setItem('fs_skip_onboarding', 'true');
       department: formData.department,
       company_name: formData.companyName,
       phone: formData.phoneNumber,
+      phone_number: formData.phoneNumber,
       location: formData.location,
       profile_completed: true 
     };

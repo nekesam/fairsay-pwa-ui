@@ -130,6 +130,9 @@ export const AppProvider = ({ children }) => {
         ...userData, 
         firstName: userData?.first_name || userData?.firstName || "User",
         lastName: userData?.last_name || userData?.lastName || "",
+        company: userData?.company_name || userData?.company || "",
+        jobTitle: userData?.job_title || userData?.jobTitle || "",
+        employeeId: userData?.employee_id || userData?.employeeId || "",
         isAdmin: isElevated,
         profile_completed: Boolean(userData.profile_completed),
         verification_status: userData.verification_status || 'unverified'
@@ -179,7 +182,20 @@ export const AppProvider = ({ children }) => {
         await api.put('/auth/profile', updatedData);
       }
 
-      setUser(prev => ({ ...prev, ...updatedData, profile_completed: true}));
+      const normalizedStateUpdate = {
+        firstName: updatedData.first_name || user?.firstName,
+        lastName: updatedData.last_name || user?.lastName,
+        phone: updatedData.phone || user?.phone,
+        location: updatedData.location || user?.location,
+        company: updatedData.company_name || user?.company,
+        jobTitle: updatedData.job_title || user?.jobTitle,
+        department: updatedData.department || user?.department,
+        employeeId: updatedData.employee_id || user?.employeeId,
+        bio: updatedData.bio || user?.bio,
+        profile_completed: true
+      };
+
+      setUser(prev => ({ ...prev, ...normalizedStateUpdate}));
       addNotification("Profile Updated", "Your account information was saved successfully", "success");
       showAlert("Profile updated successfully!", "success");
       return true;
@@ -211,6 +227,9 @@ export const AppProvider = ({ children }) => {
             ...u,
             firstName: u.first_name || "User",
             lastName: u.last_name || "",
+            company: u.company_name || u.company || "",
+            jobTitle: u.job_title || u.jobTitle || "",
+            employeeId: u.employee_id || u.employeeId || "",
             isAdmin: ['super_admin', 'admin', 'investigator'].includes(String(u.role).toLowerCase()) || u.is_admin == true || u.is_admin === 1,
             profile_completed: Boolean(u.profile_completed),
             verification_status: u.verification_status || 'unverified'

@@ -28,11 +28,18 @@ export default function EducationHub() {
   const [learningState, setLearningState] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  //Fetch real progress when the page loads
+  // Fetch real progress when the page loads
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const res = await api.get('/learning/state');
+        const res = await api.get('/learning/state', {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        });
+        
         setLearningState(res.data);
       } catch (error) {
         console.error("Failed to fetch learning progress:", error);

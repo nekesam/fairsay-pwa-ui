@@ -10,7 +10,7 @@ import {
   retaliationProtectionLessons
 } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
-import { logActivity, isCourseUnlocked } from "../utils/logic-helpers";
+import { logActivity } from "../utils/logic-helpers";
 import { useState, useEffect } from "react";
 import api from "../services/api";
 
@@ -34,13 +34,6 @@ export default function Lesson() {
   const currentId = parseInt(lessonId || "1");
   const courseId_ = courseId || "workplace-harassment";
   
-  // Check if course is unlocked
-  useEffect(() => {
-    if (!isCourseUnlocked(courseId_)) {
-      // Redirect to education hub if trying to access locked course
-      navigate("/learning");
-    }
-  }, [courseId_, navigate]);
   
   // Dynamically load the course summary and the detailed lessons
   const course = courses.find(c => c.id === courseId_);
@@ -51,11 +44,53 @@ export default function Lesson() {
   // Track completed lessons dynamically for this specific course
   const [completedLessons, setCompletedLessons] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
+  const fetchRealProgress = async () => {
+    try {
+      const res = await api.get('/learning/state', {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      });
+      
+      const arrayLessons = res.data?.completedLessons || [];
+      const dbCompletedForThisCourse = [];
+
+      
+      arrayLessons.forEach(lesson => {
+        if (lesson.course_slug === courseId_) {
+          
+          if (lesson.lesson_number) {
+            dbCompletedForThisCourse.push(parseInt(lesson.lesson_number));
+          } else {
+            const idMatch = String(lesson.lesson_id).match(/\d+$/);
+            if (idMatch) dbCompletedForThisCourse.push(parseInt(idMatch[0]));
+          }
+        }
+      });
+
+      const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
+      const merged = Array.from(new Set([...stored, ...dbCompletedForThisCourse]));
+      
+      setCompletedLessons(merged);
+
+    } catch (err) {
+      console.error("Failed to sync sidebar progress from DB:", err);
+      // Fallback to local storage if API fails
+      const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
+      setCompletedLessons(stored);
+    }
+  };
+
+  if (user) {
+    fetchRealProgress();
+  } else {
     const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
     setCompletedLessons(stored);
-  }, [courseId_, currentId]);
-
+  }
+}, [courseId_, currentId, user]);
   //Track the lesson the user is currently reading
   useEffect(() => {
     const trackProgress = async () => {
