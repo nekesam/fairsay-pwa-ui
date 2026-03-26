@@ -80,14 +80,14 @@ export default function Quiz() {
     if (hasPassedNow && !hasPassedBefore) {
       try {
         if (user && !user.id?.toString().startsWith('dev-')) {
-          // ✅ FIX: Changed courseId to courseSlug to match backend strictness
+          
           const res = await api.post('/learning/quiz', { 
             courseSlug: courseId_, 
             score: finalScorePct 
           });
 
           //Check if the complaint system is unlocked
-          if (res.data?.courseCompleted) {
+          if (res.data?.courseCompleted || res.data?.isPassed) {
              setUser(prev => ({ ...prev, course_completed: true }));
              addNotification(
                "Training Complete!", 
