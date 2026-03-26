@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 
 function StarRating({ label, sublabel }) {
   const [rating, setRating] = useState(0);
@@ -108,32 +109,7 @@ export default function ComplaintFeedback() {
     <div className="min-h-screen bg-[#F0F4F8]">
       <Navbar />
 
-      <div className="flex items-center justify-end px-4 pt-4 mb-2">
-        <Link
-          to="/my-complaints"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-base mr-4 lg:mr-8"
-          style={{ textDecoration: 'none' }}
-          aria-label="Back to Complaints"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="inline-block align-middle"
-          >
-            <path
-              d="M15 19l-7-7 7-7"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="align-middle" style={{ lineHeight: 1 }}>Back to Complaints</span>
-        </Link>
-      </div>
+      <BackButton to="/my-complaints" label="Back to Complaints" />
       
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-5">
         {/* Title */}

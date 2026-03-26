@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import BackButton from '../components/BackButton';
 import { useAppContext } from '../context/AppContext';
 
 // Toggle Component
@@ -634,34 +635,7 @@ export default function ProfileSettings() {
     <div className="min-h-screen bg-slate-50 dark:bg-dark-bg-primary">
       <Navbar />
 
-      {/* Back to Profile link */}
-      <div className="max-w-7xl mx-auto px-4 pt-6">
-        <div className="mb-4 flex justify-end">
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-600 font-medium text-base"
-            style={{ textDecoration: 'none' }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="inline-block align-middle"
-            >
-              <path
-                d="M15 19l-7-7 7-7"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="align-middle" style={{ lineHeight: 1 }}>Back to Profile</span>
-          </Link>
-        </div>
-      </div>
+      <BackButton to="/profile" label="Back to Profile" variant="gray" />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
