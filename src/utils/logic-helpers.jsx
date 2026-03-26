@@ -96,52 +96,6 @@ export const getActivityIcon = (action = "") => {
   );
 };
 
-export const calculateProgress = (user, totalModulesCount) => {
-  if (!user?.completedModules) return 0; 
-  const completedCount = user.completedModules.length;
-  return Math.round((completedCount / totalModulesCount) * 100);
-};
-
-export const isModuleCompleted = (user, moduleId) => {
-  return user?.completedModules?.includes(moduleId) ? 100 : 0;
-};
-
-export const updateLessonProgress = (userId, moduleId, lessonId) => {
-  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
-  const index = users.findIndex(u => u.id === userId);
-
-  if (index !== -1) {
-    if (!users[index].progress) users[index].progress = {};
-    if (!users[index].progress[moduleId]) users[index].progress[moduleId] = [];
-
-    if (!users[index].progress[moduleId].includes(lessonId)) {
-      users[index].progress[moduleId].push(lessonId);
-    }
-    
-    localStorage.setItem('fs_users', JSON.stringify(users));
-    return users[index];
-  }
-};
-
-export const completeModuleQuiz = (userId, moduleId, score) => {
-  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
-  const index = users.findIndex(u => u.id === userId);
-
-  if (index !== -1 && score >= 80) {
-    if (!users[index].completedModules) users[index].completedModules = [];
-    if (!users[index].completedModules.includes(moduleId)) {
-      users[index].completedModules.push(moduleId);
-    }
-    
-    const required = ['harassment', 'discrimination', 'wage-hour', 'retaliation', 'procedures'];
-    users[index].hasCompletedEducation = required.every(m => 
-      users[index].completedModules.includes(m)
-    );
-    
-    localStorage.setItem('fs_users', JSON.stringify(users));
-    return users[index];
-  }
-};
 
 export const submitComplaint = async (data) => {
   try {
@@ -177,56 +131,6 @@ export const courseOrder = [
   'wage-hour',
   'retaliation-protection',
 ];
-
-//Added - Get course progress from localStorage
-
-export const getProgress = () => {
-  try {
-    const stored = localStorage.getItem(PROGRESS_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-    
-    return {
-      'workplace-harassment': { unlocked: true, completed: false, score: 0 }
-    };
-  } catch (error) {
-    console.error('Error reading progress:', error);
-    return {
-      'workplace-harassment': { unlocked: true, completed: false, score: 0 }
-    };
-  }
-};
-
-//Added - Save course progress to localStorage
-export const saveProgress = (progress) => {
-  try {
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-  } catch (error) {
-    console.error('Error saving progress:', error);
-  }
-};
-
-//Added - Check if a course is unlocked
-export const isCourseUnlocked = (courseId) => {
-  const progress = getProgress();
-  return progress[courseId]?.unlocked === true;
-};
-
-//Added - Check if a course is completed
-export const isCourseCompleted = (courseId) => {
-  const progress = getProgress();
-  return progress[courseId]?.completed === true;
-};
-
-//Added - Reset all progress (for testing/admin purposes)
-export const resetProgress = () => {
-  const initialProgress = {
-    'workplace-harassment': { unlocked: true, completed: false, score: 0 }
-  };
-  saveProgress(initialProgress);
-  return initialProgress;
-};
 
 //Added - whistleblower services
 export const fetchMyComplaints = async () => {
@@ -343,7 +247,7 @@ export const updateUserRoleAdmin = async (userId, newRole) => {
 
 export const verifyUserAdmin = async (userId, notes = "") => {
   try {
-    const res = await api.put(`verification/admin/verify-user/${userId}/approve`, { notes });
+    const res = await api.put(`/verification/admin/verify-user/${userId}/approve`, { notes });
     return { success: true, message: res.data?.message || "User verified successfully." };
   } catch (err) {
     console.error("Failed to verify user", err);

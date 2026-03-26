@@ -4,6 +4,7 @@ import { courses } from '../data/courses';
 import Navbar from '../components/Navbar';
 import BackButton from '../components/BackButton';
 import { useAppContext } from '../context/AppContext'; 
+import api from '../services/api';
 
 function InfoField({ icon, value, editing, name, onChange }) {
   return (
@@ -62,6 +63,11 @@ export default function Profile() {
   const [editData, setEditData] = useState(profile);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [learningData, setLearningData] = useState({
+    enrichedCourses: courses.map((c, i) => ({ ...c, actualProgress: 0, isUnlocked: i === 0 })),
+    completedCount: 0
+  });
+
   // Sync state if user context loads slightly after component mount
   useEffect(() => {
     if (user) {
@@ -83,23 +89,70 @@ export default function Profile() {
     }
   }, [user]);
 
-  //To get learning progress from courseProgress utility function, which calculates based on user's completed lessons
-  const completedLessonsCount = user?.lessons_completed || 0; 
+  //To get learning progress 
+  useEffect(() => {
+    const fetchLearningState = async () => {
+      if (!user) return;
+      
+      try {
+        const learnRes = await api.get('/learning/state', {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        });
+        
+        // Map completed lessons
+        const completedLessonsMap = (learnRes.data?.completedLessons || []).reduce((map, lesson) => {
+          map[lesson.lesson_id] = true; 
+          if (lesson.course_slug) {
+            map[`${lesson.course_slug}-lesson-${lesson.lesson_id}`] = true;
+            if (lesson.lesson_number) map[`${lesson.course_slug}-lesson-${lesson.lesson_number}`] = true;
+          }
+          return map;
+        }, {});
 
-  const learningProgress = courses.map((course, index) => {
-    const isCompleted = completedLessonsCount > index;
-    const isUnlocked = completedLessonsCount >= index;
+        // Map passed quizzes
+        const passedQuizzesMap = (learnRes.data?.quizStatuses || []).reduce((map, quiz) => {
+          if (quiz.is_passed) map[quiz.course_slug] = true;
+          return map;
+        }, {});
 
-    return {
-      name: course.title,
-      percent: isCompleted ? 100 : (isUnlocked ? 25 : 0), 
-      completed: isCompleted,
-      inProgress: isUnlocked && !isCompleted,
-      locked: !isUnlocked
+        // Calculate progress dynamically per course
+        const enriched = courses.map((course, index) => {
+          const courseLessons = course.lessons || [];
+          const lessonsDone = courseLessons.filter(l => 
+            completedLessonsMap[`${course.id}-lesson-${l.id}`] || 
+            completedLessonsMap[String(l.id)]
+          ).length;
+          
+          const isQuizPassed = passedQuizzesMap[course.id] === true;
+          const totalItems = courseLessons.length + 1;
+          const completedItems = lessonsDone + (isQuizPassed ? 1 : 0);
+          
+          let prog = Math.round((completedItems / totalItems) * 100) || 0;
+          if (isQuizPassed) prog = 100;
+          
+          let isPrevCourseCompleted = false;
+          if (index > 0) {
+            isPrevCourseCompleted = passedQuizzesMap[courses[index - 1].id] === true;
+          }
+          const isUnlocked = index === 0 || isPrevCourseCompleted;
+
+          return { ...course, actualProgress: prog, isUnlocked };
+        });
+
+        const completedCount = enriched.filter(c => c.actualProgress === 100).length;
+        setLearningData({ enrichedCourses: enriched, completedCount });
+
+      } catch (err) {
+        console.error("Failed to fetch learning stats for profile:", err);
+      }
     };
-  });
 
-  const completedCount = learningProgress.filter(item => item.completed).length;
+    fetchLearningState();
+  }, [user]);
 
   function handleEdit() {
     setEditing(true);
@@ -117,7 +170,7 @@ export default function Profile() {
     const payload = {
       first_name: editData.firstName,
       last_name: editData.lastName,
-      phone_number: editData.phone,
+      phone: editData.phone, // Successfully matches the backend requirements
       location: editData.location,
       company_name: editData.company,
       job_title: editData.jobTitle,
@@ -185,7 +238,8 @@ export default function Profile() {
                     </svg>
                     <span>Modules Completed</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-dark-text-primary">{completedCount}/{courses.length}</span>
+                  {/* ✅ FIXED: properly referenced learningData.completedCount */}
+                  <span className="font-semibold text-gray-900 dark:text-dark-text-primary">{learningData.completedCount}/{courses.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -232,7 +286,8 @@ export default function Profile() {
             <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <h3 className="font-poppins font-bold text-base text-gray-900 dark:text-dark-text-primary mb-4">Recent Activity</h3>
               <ul className="space-y-4">
-                {completedCount > 0 && (
+                {/* ✅ FIXED: properly referenced learningData.completedCount */}
+                {learningData.completedCount > 0 && (
                   <li className="flex items-start gap-3">
                     <div className="mt-0.5 flex-shrink-0">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -447,33 +502,41 @@ export default function Profile() {
             <section className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <h2 className="font-poppins font-bold text-xl text-gray-900 dark:text-dark-text-primary mb-6">Learning Progress</h2>
               <div className="space-y-4">
-                {learningProgress.map((item) => (
-                  <div key={item.name}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {item.completed ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                            <polyline points="22 4 12 14.01 9 11.01"/>
-                          </svg>
-                        ) : item.inProgress ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                          </svg>
-                        ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                          </svg>
-                        )}
-                        <span className={`text-sm font-inter ${item.locked ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-dark-text-secondary"}`}>{item.name}</span>
+                {/* ✅ FIXED: properly maps over learningData.enrichedCourses */}
+                {learningData.enrichedCourses.map((item) => {
+                  const isCompleted = item.actualProgress === 100;
+                  const isUnlocked = item.isUnlocked;
+                  const inProgress = isUnlocked && item.actualProgress > 0 && item.actualProgress < 100;
+                  const locked = !isUnlocked;
+
+                  return (
+                    <div key={item.title}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {isCompleted ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                              <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                          ) : inProgress ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                          ) : (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                          )}
+                          <span className={`text-sm font-inter ${locked ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-dark-text-secondary"}`}>{item.title}</span>
+                        </div>
+                        <span className={`text-sm font-semibold font-inter ${isCompleted ? "text-teal-600" : inProgress ? "text-[#1E3A8A]" : "text-gray-400 dark:text-gray-500"}`}>{item.actualProgress}%</span>
                       </div>
-                      <span className={`text-sm font-semibold font-inter ${item.completed ? "text-teal-600" : item.inProgress ? "text-[#1E3A8A]" : "text-gray-400 dark:text-gray-500"}`}>{item.percent}%</span>
+                      <ProgressBar percent={item.actualProgress} completed={isCompleted} />
                     </div>
-                    <ProgressBar percent={item.percent} completed={item.completed} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <Link
                 to="/learning"
