@@ -53,7 +53,13 @@ export default function EducationHub() {
     );
   }
 
-  const completedLessonsMap = learningState?.completedLessons || {}; 
+ const arrayLessons = learningState?.completedLessons || {};
+const completedLessonsMap = Array.isArray(arrayLessons) 
+  ? arrayLessons.reduce((map, lesson) => {
+      map[lesson.lesson_id] = true;
+      return map;
+    }, {})
+  : arrayLessons; 
   const currentCourseId = learningState?.currentCourseId || courses[0].id; 
   
   // Dynamically calculate progress 
