@@ -123,9 +123,8 @@ function App() {
           <Route
             path="/file-complaint"
             element={
-              <ProtectedRoutes step={USER_STATUS.EDUCATION}>
+             
                 <ComplaintForm />
-              </ProtectedRoutes>
             }
           />
          
