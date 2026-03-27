@@ -106,10 +106,9 @@ const Hero = () => {
   const navigate = useNavigate();
   return (
     <section className="relative min-h-[90vh] flex items-center bg-slate-900 pt-20 pb-5">
-        <div style={{ backgroundImage: `url(${Heroimage})` }} className="w-full h-full bg-cover bg-center bg-no-repeat absolute inset-0 z-0 blur-[5px]" />
-        
+      <div style={{ backgroundImage: `url(${Heroimage})` }} className="w-full h-full bg-cover bg-center bg-no-repeat absolute inset-0 z-0 blur-[5px]" />
       <div className="container mx-auto relative z-10 grid lg:grid-cols-2 gap-12 w-full px-2">
-        <div className="text-white">
+        <div className="text-white flex flex-col">
           <h1 className="text-[60px] md:text-7x1 md:mb-10 font-bold leading-tight mb-5 font-poppins">
             Your Voice <br /> <span className="text-white">Matters.</span> <br />
             <span className="text-[#2DD4BF] text-[48px]">Speak Up</span> with Confidence.
@@ -117,22 +116,33 @@ const Hero = () => {
           <p className="text-[20px] text-gray-300 mb-8 max-w-[516px]">
             {APP_NAME} empowers employees to understand their <br />workplace rights, report violations safely, and track resolutions with complete transparency.
           </p>
-          <div className="flex gap-4">
-            <button onClick={() => navigate('/sign-up')} className="flex bg-gradient-to-b from-[#1E3A8A] to-[#0F766E] pl-1 pb-6 pt-5 items-center rounded-md font-bold w-[150px] h-[55px] align-middle justify-center">Get started <img className="ml-8 h-6 gap-2" src={arrow} alt="Arrow right" /></button>
-            <button className="border border-white/30 px-4 py-4 rounded-md font-bold flex justify-center">Learn more <img className="ml-8 h-6 gap-2" src={arrow} alt="Arrow right" /></button>
+          <div className="flex gap-4 w-full items-center">
+            <div className="flex gap-4">
+              <button onClick={() => navigate('/sign-up')} className="flex bg-gradient-to-b from-[#1E3A8A] to-[#0F766E] pl-1 pb-6 pt-5 items-center rounded-md font-bold w-[150px] h-[55px] align-middle justify-center">Get started <img className="ml-8 h-6 gap-2" src={arrow} alt="Arrow right" /></button>
+              <button className="border border-white/30 px-4 py-4 rounded-md font-bold flex justify-center items-center">Learn more <img className="ml-8 h-6 gap-2" src={arrow} alt="Arrow right" /></button>
+            </div>
+            <div className="flex-1 flex justify-end">
+              <button
+                onClick={() => navigate('/whistleblowing')}
+                className="flex items-center justify-center bg-gradient-to-b from-[#DC2626] to-[#b91c1c] text-white font-bold rounded-md h-[55px] px-6 md:px-8 shadow-lg transition-all hover:scale-[1.03]"
+                style={{ minWidth: 'fit-content', paddingLeft: '1rem', paddingRight: '1.5rem' }}
+              >
+                <span className="flex items-center gap-3 text-lg">Whistleblowing Form <img className="h-6 w-6" src={arrow} alt="Arrow right" /></span>
+              </button>
+            </div>
           </div>
         </div>
         <div className="hidden lg:flex flex-col justify-center max-w-full">
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 space-y-6 min-h-[270px]">
-                <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={shield} alt="Shield icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Protected & Confidential</p>
-                <p className="text-sm text-gray-400">Your privacy is our priority</p></div>
-                </div>
-                <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={book} alt="Book icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Educational Resources</p>
-                <p className="text-sm text-gray-400">Learn your workplace rights</p></div></div>
-                <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={report} alt="Report icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Easy Reporting</p>
-                <p className="text-sm text-gray-400">Submit complaints seamlessly</p>
-                </div></div>
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 space-y-6 min-h-[270px]">
+            <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={shield} alt="Shield icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Protected & Confidential</p>
+              <p className="text-sm text-gray-400">Your privacy is our priority</p></div>
             </div>
+            <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={book} alt="Book icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Educational Resources</p>
+              <p className="text-sm text-gray-400">Learn your workplace rights</p></div></div>
+            <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={report} alt="Report icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Easy Reporting</p>
+              <p className="text-sm text-gray-400">Submit complaints seamlessly</p>
+            </div></div>
+          </div>
         </div>
       </div>
     </section>
